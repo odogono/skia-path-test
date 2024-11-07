@@ -3,8 +3,26 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
+      "@components/*": [
+        "./src/components/*"
+      ],
+      "@helpers/*": [
+        "./src/helpers/*"
+      ],
+      "@hooks/*": [
+        "./src/hooks/*"
+      ],
+      "@model/*": [
+        "./src/model/*"
+      ],
+      "@net/*": [
+        "./src/net/*"
+      ],
       "@/*": [
-        "./*"
+        "./src/*"
+      ],
+      "@types": [
+        "./src/types.ts"
       ]
     }
   },
