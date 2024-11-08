@@ -1,10 +1,10 @@
-import { ConfigContext, ExpoConfig } from '@expo/config';
 import * as dotenv from 'dotenv';
+
+import { ConfigContext, ExpoConfig } from '@expo/config';
 
 const IS_DEV = process.env.APP_VARIANT === 'development';
 
 dotenv.config();
-
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,

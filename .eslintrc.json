@@ -1,7 +1,12 @@
 {
   "root": true,
   "parser": "@typescript-eslint/parser",
-  "plugins": ["@typescript-eslint", "react-native", "prettier", "eslint-plugin-react-compiler"],
+  "plugins": [
+    "@typescript-eslint",
+    "react-native",
+    "prettier",
+    "eslint-plugin-react-compiler"
+  ],
   "extends": [
     "universe",
     "universe/native",
@@ -10,7 +15,11 @@
   ],
   "overrides": [
     {
-      "files": ["*.ts", "*.tsx", "*.d.ts"],
+      "files": [
+        "*.ts",
+        "*.tsx",
+        "*.d.ts"
+      ],
       "parserOptions": {
         "project": "./tsconfig.json"
       },
@@ -32,7 +41,8 @@
       "error",
       {
         "ignoreCase": true,
-        "ignoreDeclarationSort": true
+        "ignoreDeclarationSort": true,
+        "ignoreMemberSort": true
       }
     ],
     "import/order": [

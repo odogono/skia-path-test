@@ -1,6 +1,8 @@
 import { Suspense, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
 import * as SplashScreen from 'expo-splash-screen';
+
 import { Slot } from '@helpers/router';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.

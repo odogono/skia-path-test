@@ -1,5 +1,4 @@
-import { router as expoRouter } from 'expo-router';
-import type { Href, Router } from 'expo-router';
+import { router as expoRouter, type Href, type Router } from 'expo-router';
 
 export { Redirect, Slot, Stack, useLocalSearchParams } from 'expo-router';
 
