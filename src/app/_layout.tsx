@@ -1,5 +1,7 @@
-import { Stack } from "@helpers/router";
+import { Stack } from '@helpers/router';
 
-export default function RootLayout() {
+export const RootLayout = () => {
   return <Stack />;
-}
+};
+
+export default RootLayout;

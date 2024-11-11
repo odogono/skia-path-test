@@ -13,5 +13,5 @@ export const router: ExtendedRouter = {
   reset<T extends string | object>(route: Href) {
     if (router.canGoBack()) router.dismissAll();
     router.replace(route);
-  },
+  }
 };

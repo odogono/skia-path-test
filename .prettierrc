@@ -21,6 +21,6 @@
     "jsx",
     "decorators-legacy"
   ],
-  "importOrderTypeScriptVersion": "^5",
+  "importOrderTypeScriptVersion": "5.0.0",
   "importOrderCaseSensitive": true
 }

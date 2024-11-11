@@ -18,19 +18,19 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   newArchEnabled: true,
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.odogono.skiapathtesttoo',
+    bundleIdentifier: 'com.odogono.skiapathtesttoo'
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
-      backgroundColor: '#ffffff',
+      backgroundColor: '#ffffff'
     },
-    package: 'com.odogono.skiapathtesttoo',
+    package: 'com.odogono.skiapathtesttoo'
   },
   web: {
     bundler: 'metro',
     output: 'static',
-    favicon: './assets/images/favicon.png',
+    favicon: './assets/images/favicon.png'
   },
   plugins: [
     'expo-router',
@@ -40,11 +40,11 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
         image: './assets/images/splash-icon.png',
         imageWidth: 200,
         resizeMode: 'contain',
-        backgroundColor: '#ffffff',
-      },
-    ],
+        backgroundColor: '#ffffff'
+      }
+    ]
   ],
   experiments: {
-    typedRoutes: true,
+    typedRoutes: true
   }
 });
