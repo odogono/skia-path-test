@@ -2,12 +2,16 @@ import { useCallback, useEffect, useMemo } from 'react';
 
 import {
   Circle,
+  CornerPathEffect,
   Group,
   Path,
+  PathProps,
   Rect,
   SkContourMeasure,
   SkPath,
-  Skia
+  SkPoint,
+  Skia,
+  SkiaDefaultProps
 } from '@shopify/react-native-skia';
 import {
   Easing,
@@ -45,7 +49,15 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
   // creates a square path
   const path = useMemo(() => Skia.Path.MakeFromSVGString(rawString)!, []);
 
-  const currentPoint = usePathContourMeasure(path, t);
+  const { position, getPosAtT, contourMeasure } = usePathContourMeasure(
+    path,
+    t
+  );
+  const { start: trailStart, end: trailEnd } = useTrailPath(
+    path,
+    t,
+    contourMeasure
+  );
 
   useEffect(() => {
     t.value = withRepeat(
@@ -56,42 +68,120 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
       -1,
       false
     );
-
-    // log.debug('pathGeometry', points);
   }, []);
 
-  const cx = useDerivedValue(() => currentPoint.value[0]);
-  const cy = useDerivedValue(() => currentPoint.value[1]);
+  const cx = useDerivedValue(() => position.value[0]);
+  const cy = useDerivedValue(() => position.value[1]);
 
   return (
     <Group matrix={mViewMatrix}>
-      <Path path={path} color='lightblue' style='stroke' strokeWidth={5} />
+      <Path
+        path={path}
+        color='#EEE'
+        style='stroke'
+        strokeWidth={10}
+        strokeCap='round'
+        strokeJoin='round'
+      />
+      <TrailPath
+        path={path}
+        color='lightgreen'
+        style='stroke'
+        strokeWidth={10}
+        strokeCap='round'
+        strokeJoin='round'
+        t={t}
+        trailLength={0.1}
+      />
       <Circle cx={cx} cy={cy} r={5} color='black' />
     </Group>
   );
 };
 
+type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
+  t: SharedValue<number>;
+  trailLength: number;
+};
+
+const TrailPath = ({ t, trailLength, ...pathProps }: TrailPathProps) => {
+  const preStartT = useSharedValue(0);
+
+  const postStartT = useSharedValue(0);
+  const postEndT = useSharedValue(0);
+
+  useAnimatedReaction(
+    () => t.value,
+    (t) => {
+      const startT = t - trailLength;
+
+      if (startT < 0) {
+        preStartT.value = ((startT % 1) + 1) % 1;
+      } else {
+        preStartT.value = 1;
+      }
+
+      postStartT.value = Math.max(startT, 0);
+      postEndT.value = t;
+    }
+  );
+
+  return (
+    <>
+      <Path {...pathProps} start={preStartT} end={1} />
+      <Path {...pathProps} start={postStartT} end={postEndT} />
+    </>
+  );
+};
+
+type ContourMeasure = [SkContourMeasure | null, number];
+
+const useTrailPath = (
+  path: SkPath,
+  t: SharedValue<number>,
+  contourMeasure: SharedValue<ContourMeasure>
+) => {
+  const start = useSharedValue<Position>([0, 0]);
+  const end = useSharedValue<Position>([0, 0]);
+
+  useAnimatedReaction(
+    () => t.value,
+    (t) => {
+      const trailLength = 0.25;
+      const [contour, totalLength] = contourMeasure.value;
+
+      const startT = (((t - trailLength) % 1) + 1) % 1;
+      const endT = ((t % 1) + 1) % 1;
+      const [startPos] = contour?.getPosTan(startT * totalLength) ?? [
+        { x: 0, y: 0 }
+      ];
+
+      start.value = [startPos.x, startPos.y];
+
+      const [endPos] = contour?.getPosTan(endT * totalLength) ?? [
+        { x: 0, y: 0 }
+      ];
+      end.value = [endPos.x, endPos.y];
+    }
+  );
+
+  return { start, end };
+};
+
 const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
   const position = useSharedValue<Position>([0, 0]);
-  const measureIter = useSharedValue<[SkContourMeasure | null, number]>([
-    null,
-    0
-  ]);
+  const contourMeasure = useSharedValue<ContourMeasure>([null, 0]);
 
   useEffect(() => {
     const it = Skia.ContourMeasureIter(path, false, 1);
     const contour = it.next();
     const totalLength = contour?.length() ?? 0;
-    measureIter.value = [contour, totalLength] as [
-      SkContourMeasure | null,
-      number
-    ];
+    contourMeasure.value = [contour, totalLength] as ContourMeasure;
   }, [path]);
 
   useAnimatedReaction(
     () => t.value,
     (t) => {
-      const [contour, totalLength] = measureIter.value;
+      const [contour, totalLength] = contourMeasure.value;
       const length = t * totalLength;
       const [pos] = contour?.getPosTan(length) ?? [{ x: 0, y: 0 }];
 
@@ -99,5 +189,15 @@ const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
     }
   );
 
-  return position;
+  const getPosAtT = useCallback(
+    (t: number) => {
+      const [contour, totalLength] = contourMeasure.value;
+      const length = t * totalLength;
+      const [pos] = contour?.getPosTan(length) ?? [{ x: 0, y: 0 }];
+      return [pos.x, pos.y];
+    },
+    [contourMeasure]
+  );
+
+  return { position, getPosAtT, contourMeasure };
 };
