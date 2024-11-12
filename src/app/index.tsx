@@ -11,27 +11,14 @@ import { WorldCanvas } from '@components/WorldCanvas/WorldCanvas';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
 export const Index = () => {
-  const t = useSharedValue(0);
-
   return (
     <FiberProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <StoreProvider>
             <WorldCanvas>
-              <PathView t={t} />
+              <PathView />
             </WorldCanvas>
-
-            <Slider
-              minimumValue={0}
-              maximumValue={100}
-              step={1}
-              initialValue={0}
-              onValueChange={(value: number) => {
-                t.value = value;
-                // console.log('Current value:', value);
-              }}
-            />
           </StoreProvider>
         </View>
       </GestureHandlerRootView>
@@ -44,7 +31,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'white'
+    backgroundColor: '#444'
   }
 });
 

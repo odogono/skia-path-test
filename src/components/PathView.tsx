@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo } from 'react';
 
 import {
+  BlurMask,
   Circle,
   CornerPathEffect,
   Group,
@@ -23,6 +24,7 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
+import { centerSVGPath } from '@helpers/skia';
 import { useStoreState } from '@model/useStore';
 import { Position } from '@types';
 
@@ -31,7 +33,7 @@ const { createLogger } = require('@helpers/log');
 const log = createLogger('PathView');
 
 export type PathViewProps = {
-  t: SharedValue<number>;
+  t?: SharedValue<number>;
 };
 
 export const PathView = ({ t: tProp }: PathViewProps) => {
@@ -44,10 +46,18 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
 
   const rawString =
     'M 128 0 L 168 80 L 256 93 L 192 155 L 207 244 L 128 202 L 49 244 L 64 155 L 0 93 L 88 80 L 128 0 Z';
-  // const rawString = 'M-100 -100L100 -100L100 100L-100 100L-100 -100Z';
 
-  // creates a square path
-  const path = useMemo(() => Skia.Path.MakeFromSVGString(rawString)!, []);
+  // Center the path around 0,0
+  const centeredPathString = useMemo(
+    () => centerSVGPath(rawString),
+    [rawString]
+  );
+
+  // Use the centered path string
+  const path = useMemo(
+    () => Skia.Path.MakeFromSVGString(centeredPathString)!,
+    [centeredPathString]
+  );
 
   const { position, getPosAtT, contourMeasure } = usePathContourMeasure(
     path,
@@ -77,7 +87,7 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
     <Group matrix={mViewMatrix}>
       <Path
         path={path}
-        color='#EEE'
+        color='#FFFFFF11'
         style='stroke'
         strokeWidth={10}
         strokeCap='round'
@@ -85,7 +95,7 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
       />
       <TrailPath
         path={path}
-        color='lightgreen'
+        color='lightblue'
         style='stroke'
         strokeWidth={10}
         strokeCap='round'
@@ -93,7 +103,7 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
         t={t}
         trailLength={0.1}
       />
-      <Circle cx={cx} cy={cy} r={5} color='black' />
+      <Circle cx={cx} cy={cy} r={5} color='white' />
     </Group>
   );
 };
@@ -124,11 +134,16 @@ const TrailPath = ({ t, trailLength, ...pathProps }: TrailPathProps) => {
       postEndT.value = t;
     }
   );
+  const blur = 20;
 
   return (
     <>
-      <Path {...pathProps} start={preStartT} end={1} />
-      <Path {...pathProps} start={postStartT} end={postEndT} />
+      <Path {...pathProps} start={preStartT} end={1}>
+        <BlurMask blur={blur} style='solid' />
+      </Path>
+      <Path {...pathProps} start={postStartT} end={postEndT}>
+        <BlurMask blur={blur} style='solid' />
+      </Path>
     </>
   );
 };

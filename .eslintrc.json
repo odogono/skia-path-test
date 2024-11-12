@@ -37,6 +37,21 @@
     "react-native/no-raw-text": 2,
     "react-native/no-single-element-style-arrays": 2,
     "no-console": "error",
+    "prefer-arrow/prefer-arrow-functions": [
+      "warn",
+      {
+        "disallowPrototype": true,
+        "singleReturnOnly": false,
+        "classPropertiesAllowed": false
+      }
+    ],
+    "react/function-component-definition": [
+      2,
+      {
+        "namedComponents": "arrow-function",
+        "unnamedComponents": "arrow-function"
+      }
+    ],
     "sort-imports": [
       "error",
       {
