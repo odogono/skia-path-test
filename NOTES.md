@@ -31,7 +31,11 @@ This can be fixed by rendering two Path elements. The first is for when the star
 Setting a strokeCap and a strokeJoin makes the trail look better, and also avoids a nasty crease when the path starts and ends.
 
 
+## Reactive Trail
+
 This is all well and good for a continuous moving trail, but it would be nice to have a trail which fades over time, so that when it stops, it gradually receeds to a 0 length.
+
+The idea with this is that the trail end is now untied from the main t value, and catches up with it over time.
 
 <insert description of how to do this>
 
@@ -47,3 +51,14 @@ The trail is a single colour, what would it take to have a sort of gradient with
 
 [Skia - How to paint gradient color following a stroke path](https://groups.google.com/g/skia-discuss/c/gQvvYusrqTY)
 
+
+
+
+### Protip
+
+It is useful sometimes to be able to display a shared value on the UI.
+
+The problem of course is that you can't just set a Text component, because it will not re-render when the shared value changes.
+
+The solution is to use something like the [Retext](https://github.com/wcandillon/react-native-redash/blob/master/src/ReText.tsx) component.
+What it does is to create an Animated version of a TextInput, and then you can pass in a shared value to it.

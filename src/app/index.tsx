@@ -5,20 +5,32 @@ import { FiberProvider } from 'its-fine';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 
-import { PathView } from '@components/PathView';
-import Slider from '@components/Slider';
+import { PathView } from '@components/PathView/PathView';
+import { ReText } from '@components/ReText';
 import { WorldCanvas } from '@components/WorldCanvas/WorldCanvas';
+import { debugMsg } from '@helpers/global';
+import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
 export const Index = () => {
+  const t = useSharedValue(0);
+
   return (
     <FiberProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
           <StoreProvider>
             <WorldCanvas>
-              <PathView />
+              <PathView t={t} />
             </WorldCanvas>
+
+            <View style={styles.sliderContainer}>
+              <ReText style={styles.debugText} text={debugMsg} />
+              <Slider
+                value={t.value}
+                onValueChange={(value) => (t.value = value[0])}
+              />
+            </View>
           </StoreProvider>
         </View>
       </GestureHandlerRootView>
@@ -32,6 +44,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#444'
+  },
+  sliderContainer: {
+    position: 'absolute',
+    bottom: 46,
+    width: '80%'
+  },
+  debugText: {
+    color: '#fff'
   }
 });
 
