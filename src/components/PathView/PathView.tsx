@@ -24,6 +24,7 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
+import { debugMsg } from '@helpers/global';
 import { centerSVGPath } from '@helpers/skia';
 import { useStoreState } from '@model/useStore';
 import { TrailPath } from './TrailPath';
@@ -61,26 +62,29 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
     [centeredPathString]
   );
 
+  const wrappedT = useDerivedValue(() => ((t.value % 1) + 1) % 1);
+
+  // useAnimatedReaction(
+  //   () => wrappedT.value,
+  //   (wrappedT) => {
+  //     debugMsg.value = `wrappedT: ${wrappedT.toFixed(3)}`;
+  //   }
+  // );
+
   const { position, getPosAtT, contourMeasure } = usePathContourMeasure(
     path,
-    t
+    wrappedT
   );
 
-  // const { start: trailStart, end: trailEnd } = useTrailPath({
-  //   path,
-  //   t,
-  //   contourMeasure
-  // });
-
   useEffect(() => {
-    // t.value = withRepeat(
-    //   withTiming(1, {
-    //     duration: 5000,
-    //     easing: Easing.linear
-    //   }),
-    //   -1,
-    //   false
-    // );
+    t.value = withRepeat(
+      withTiming(1, {
+        duration: 5000,
+        easing: Easing.linear
+      }),
+      -1,
+      false
+    );
   }, []);
 
   const cx = useDerivedValue(() => position.value[0]);
@@ -107,6 +111,7 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
         trailLength={0.1}
         isFollow={true}
         trailDecay={0.1}
+        isWrapped={true}
       />
       <Circle cx={cx} cy={cy} r={5} color='white' />
     </Group>

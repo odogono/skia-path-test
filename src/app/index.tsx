@@ -8,12 +8,16 @@ import { useSharedValue } from 'react-native-reanimated';
 import { PathView } from '@components/PathView/PathView';
 import { ReText } from '@components/ReText';
 import { WorldCanvas } from '@components/WorldCanvas/WorldCanvas';
-import { debugMsg } from '@helpers/global';
+import { debugMsg2, debugMsg } from '@helpers/global';
 import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
 export const Index = () => {
   const t = useSharedValue(0);
+
+  const minValue = 0;
+  const maxValue = 1;
+  const step = 0;
 
   return (
     <FiberProvider>
@@ -26,8 +30,16 @@ export const Index = () => {
 
             <View style={styles.sliderContainer}>
               <ReText style={styles.debugText} text={debugMsg} />
+              <ReText style={styles.debugText} text={debugMsg2} />
               <Slider
+                minimumValue={minValue}
+                maximumValue={maxValue}
                 value={t.value}
+                step={step}
+                trackMarks={[minValue, 0, maxValue]}
+                renderTrackMarkComponent={({ value }) => (
+                  <View style={styles.trackMark} />
+                )}
                 onValueChange={(value) => (t.value = value[0])}
               />
             </View>
@@ -52,6 +64,11 @@ const styles = StyleSheet.create({
   },
   debugText: {
     color: '#fff'
+  },
+  trackMark: {
+    width: 4,
+    height: 8,
+    backgroundColor: '#fff'
   }
 });
 
