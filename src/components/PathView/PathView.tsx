@@ -120,8 +120,9 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
         t={t}
         trailLength={0.1}
         isFollow={true}
-        trailDecay={0.18}
+        trailDecay={0.19}
         isWrapped={true}
+        trailDivisions={5}
       />
       <Circle cx={cx} cy={cy} r={5} color='white' />
     </Group>

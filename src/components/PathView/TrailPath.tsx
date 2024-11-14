@@ -43,6 +43,8 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
   t: SharedValue<number>;
   trailLength: number;
 
+  trailDivisions: number;
+
   // how fast the trail fades away
   trailDecay?: number;
 
@@ -57,13 +59,16 @@ export const TrailPath = ({
   t,
   trailLength,
   trailDecay = 0.2,
+  trailDivisions = 1,
   isFollow = false,
   isWrapped = false,
   ...pathProps
 }: TrailPathProps) => {
   const tailT = useSharedValue(t.value);
 
-  const pathSections = usePathSections(2);
+  const pathSections = usePathSections(trailDivisions + 2);
+
+  // console.log('oh boy', Skia.Color('lightblue'));
 
   useFrameCallback((frameInfo) => {
     const headValue = t.value;
@@ -88,27 +93,37 @@ export const TrailPath = ({
 
       tailT.value = ((tailValue % 1) + 1) % 1;
 
-      debugMsg.value = `t: ${headValue.toFixed(3)}`;
-      debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} inc ${(Math.sign(aDiff) * inc).toFixed(3)}`;
+      // debugMsg.value = `t: ${headValue.toFixed(3)}`;
+      // debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} inc ${(Math.sign(aDiff) * inc).toFixed(3)}`;
     }
 
-    if (headValue !== tailValue) {
-      updatePathSections(pathSections, tailValue, headValue);
+    if (pathSections) {
+      //&& headValue !== tailValue) {
+      updatePathSections(
+        pathSections,
+        tailValue,
+        headValue,
+        trailDivisions,
+        isWrapped
+      );
     }
   });
 
   const blur = 20;
+  const len = pathSections?.sections.length;
 
   return (
     <>
-      {pathSections.map((section) => (
+      {pathSections?.sections.map((section, index) => (
         <Path
           {...pathProps}
+          key={index}
           start={section.start}
           end={section.end}
           color={section.color}
+          strokeCap={index === 0 || index === len ? 'round' : 'butt'}
         >
-          <BlurMask blur={blur} style='solid' />
+          {/* <BlurMask blur={blur} style='solid' /> */}
         </Path>
       ))}
     </>
