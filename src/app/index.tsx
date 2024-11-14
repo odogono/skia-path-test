@@ -15,7 +15,7 @@ import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 export const Index = () => {
   const t = useSharedValue(0);
 
-  const minValue = 0;
+  const minValue = -1;
   const maxValue = 1;
   const step = 0;
 

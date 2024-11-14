@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   BlurMask,
   Circle,
+  Color,
   CornerPathEffect,
   Group,
   Path,
@@ -17,6 +18,8 @@ import {
 import {
   Easing,
   SharedValue,
+  cancelAnimation,
+  makeMutable,
   runOnJS,
   useAnimatedReaction,
   useDerivedValue,
@@ -26,7 +29,11 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
+import { getAngularDiff } from '@helpers/getAngularDiff';
 import { debugMsg2, debugMsg } from '@helpers/global';
+import { Mutable } from '@types';
+import { updatePathSections } from './updatePathSections';
+import { usePathSections } from './usePathSections';
 
 const { createLogger } = require('@helpers/log');
 
@@ -54,119 +61,56 @@ export const TrailPath = ({
   isWrapped = false,
   ...pathProps
 }: TrailPathProps) => {
-  const preStartT = useSharedValue(0);
-  const preEndT = useSharedValue(0);
-  const isPreVisible = useSharedValue(false);
-
   const tailT = useSharedValue(t.value);
 
-  const postStartT = useSharedValue(0);
-  const postEndT = useSharedValue(0);
+  const pathSections = usePathSections(2);
 
   useFrameCallback((frameInfo) => {
     const headValue = t.value;
     let tailValue = tailT.value;
-    const diff = tailValue - headValue;
+
+    const aDiff = getAngularDiff(tailValue, headValue);
+
+    // const diff = tailValue - headValue;
 
     if (isFollow) {
       const delta = (frameInfo.timeSincePreviousFrame ?? 0) / 1000;
       const inc = trailDecay * delta;
 
-      let isSame = false;
+      // let isSame = false;
       // if the trail is close to the target, just set it to the target
-      if (Math.abs(diff) < 0.001) {
+      if (Math.abs(aDiff) < 0.005) {
         tailValue = headValue;
-        isSame = true;
-      } else if (tailValue < headValue) {
-        tailValue += inc;
-      } else if (tailValue > headValue) {
-        tailValue -= inc;
-      }
-
-      // debugMsg.value = `t: ${headValue.toFixed(3)} ${isSame ? 'same' : ''}`;
-      // debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${diff.toFixed(3)}`;
-    }
-
-    tailT.value = tailValue;
-
-    let wrappedHeadT = ((headValue % 1) + 1) % 1;
-    let wrappedTailT = ((tailValue % 1) + 1) % 1;
-
-    preStartT.value = 0;
-    preEndT.value = 0;
-
-    if (
-      isWrapped &&
-      headValue <= 0 &&
-      wrappedHeadT > 0 &&
-      wrappedTailT < 1 &&
-      tailValue > 0
-    ) {
-      // && Math.abs(diff) <= 0.5) {
-      preStartT.value = wrappedHeadT;
-      preEndT.value = 1;
-      postStartT.value = 0;
-      postEndT.value = wrappedTailT;
-
-      debugMsg.value = `A preStartT: ${wrappedHeadT.toFixed(3)}`;
-      debugMsg2.value = `ApostEndT: ${wrappedTailT.toFixed(3)} diff ${diff.toFixed(3)} wrap!`;
-    } else if (
-      isWrapped &&
-      headValue >= 0 &&
-      wrappedTailT > 0 &&
-      wrappedHeadT < 1 &&
-      tailValue < 0
-    ) {
-      preStartT.value = wrappedTailT;
-      preEndT.value = 1;
-      postStartT.value = 0;
-      postEndT.value = wrappedHeadT;
-
-      debugMsg.value = `B preStartT: ${wrappedTailT.toFixed(3)}`;
-      debugMsg2.value = `B postEndT: ${wrappedHeadT.toFixed(3)} diff ${diff.toFixed(3)} wrap!`;
-    }
-    // change the trail path start and end depending on
-    // the relative position head and tail
-    else if (wrappedTailT < wrappedHeadT) {
-      postStartT.value = wrappedTailT;
-      postEndT.value = wrappedHeadT;
-
-      debugMsg.value = `C preStartT: ${wrappedTailT.toFixed(3)}`;
-      debugMsg2.value = `C postEndT: ${wrappedHeadT.toFixed(3)}`;
-    } else {
-      if (wrappedHeadT === 0 && headValue > 0) {
-        postStartT.value = wrappedTailT === 0 ? 1 : wrappedTailT;
-        postEndT.value = 1;
+        // isSame = true;
       } else {
-        postStartT.value = wrappedHeadT;
-        postEndT.value = wrappedTailT;
+        tailValue += Math.sign(aDiff) * inc;
       }
 
-      debugMsg.value = `D preStartT: ${wrappedHeadT.toFixed(3)} ${postStartT.value.toFixed(3)}`;
-      debugMsg2.value = `D postEndT: ${wrappedTailT.toFixed(3)} ${postEndT.value.toFixed(3)}`;
+      tailT.value = ((tailValue % 1) + 1) % 1;
+
+      debugMsg.value = `t: ${headValue.toFixed(3)}`;
+      debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} inc ${(Math.sign(aDiff) * inc).toFixed(3)}`;
     }
 
-    // if (
-    //   (preStartT.value === 0 && preEndT.value === 1) ||
-    //   (postStartT.value === 0 && postEndT.value === 1)
-    // ) {
-    //   debugMsg.value = `preStartT: ${wrappedHeadT.toFixed(3)}`;
-    //   debugMsg2.value = `postEndT: ${wrappedTailT.toFixed(3)} diff ${diff.toFixed(3)} wrap!`;
-    // }
+    if (headValue !== tailValue) {
+      updatePathSections(pathSections, tailValue, headValue);
+    }
   });
 
   const blur = 20;
 
   return (
     <>
-      {isWrapped && (
-        <Path {...pathProps} start={preStartT} end={preEndT}>
+      {pathSections.map((section) => (
+        <Path
+          {...pathProps}
+          start={section.start}
+          end={section.end}
+          color={section.color}
+        >
           <BlurMask blur={blur} style='solid' />
         </Path>
-      )}
-      <Path {...pathProps} start={postStartT} end={postEndT}>
-        <BlurMask blur={blur} style='solid' />
-      </Path>
+      ))}
     </>
   );
 };

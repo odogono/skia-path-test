@@ -1,4 +1,5 @@
 export const getAngularDiff = (t1: number, t2: number) => {
+  'worklet';
   if (t1 === t2) {
     return 0;
   }
@@ -11,5 +12,5 @@ export const getAngularDiff = (t1: number, t2: number) => {
   const diff2 = directDiff > 0 ? directDiff - 1 : directDiff;
 
   // Return the difference with smaller absolute value
-  return Math.abs(diff1) < Math.abs(diff2) ? diff1 : diff2;
+  return Math.abs(diff1) <= Math.abs(diff2) ? diff1 : diff2;
 };
