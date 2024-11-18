@@ -5,9 +5,43 @@ import { PathSections, usePathSections } from '../usePathSections';
 describe('updatePathSections', () => {
   let sections: PathSections;
 
+  describe('two division sections', () => {
+    beforeEach(() => {
+      sections = renderHook(() =>
+        usePathSections({ count: 3, headColor: 'lightblue' })
+      ).result.current!;
+    });
+
+    test('should result in multiple sections', () => {
+      updatePathSections(sections, 0.6, 0.9, 2, true);
+      const values = getPathSectionsValues(sections);
+      expect(values).toEqual([0.6, 0.75, 0.75, 0.9, 0, 0]);
+    });
+
+    test('wrapped over 0', () => {
+      updatePathSections(sections, 0.2, -0.1, 2, true);
+      const values = getPathSectionsValues(sections);
+      expect(values).toEqual([0.05, 0.2, 0, 0.05, 0.9, 1]);
+    });
+
+    test('stop at 0', () => {
+      updatePathSections(sections, 0.143, 0, 2, true);
+      const values = getPathSectionsValues(sections);
+      expect(values).toEqual([0.07, 0.14, 0, 0.07, 0, 0]);
+    });
+
+    test('even wrap over 0', () => {
+      updatePathSections(sections, 0.0084, -0.0084, 2, true);
+      const values = getPathSectionsValues(sections);
+      expect(values).toEqual([0, 0.01, 0, 0, 0.99, 1]);
+    });
+  });
+
   describe('multiple division sections', () => {
     beforeEach(() => {
-      sections = renderHook(() => usePathSections(5)).result.current!;
+      sections = renderHook(() =>
+        usePathSections({ count: 5, headColor: 'lightblue' })
+      ).result.current!;
     });
 
     test('should result in multiple sections', () => {
@@ -24,7 +58,9 @@ describe('updatePathSections', () => {
 
   describe('non wrapped sections', () => {
     beforeEach(() => {
-      sections = renderHook(() => usePathSections(2)).result.current!;
+      sections = renderHook(() =>
+        usePathSections({ count: 2, headColor: 'lightblue' })
+      ).result.current!;
     });
 
     test('should update a single section', () => {
@@ -42,7 +78,9 @@ describe('updatePathSections', () => {
 
   describe('wrapped sections', () => {
     beforeEach(() => {
-      sections = renderHook(() => usePathSections(2)).result.current!;
+      sections = renderHook(() =>
+        usePathSections({ count: 2, headColor: 'lightblue' })
+      ).result.current!;
     });
 
     test('should update a single section', () => {
@@ -98,7 +136,7 @@ describe('updatePathSections', () => {
     test('should return an additional section when reverse crossing over 0', () => {
       updatePathSections(sections, 0.2, 0.8);
 
-      expect(getPathSectionsValues(sections)).toEqual([0.8, 1, 0, 0.2]);
+      expect(getPathSectionsValues(sections)).toEqual([0, 0.2, 0.8, 1]);
     });
 
     test('should clear unused sections', () => {

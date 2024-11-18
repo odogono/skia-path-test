@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { Skia } from '@shopify/react-native-skia';
+import { Color, Skia } from '@shopify/react-native-skia';
 import { cancelAnimation, makeMutable } from 'react-native-reanimated';
 
 import { Mutable } from '@types';
@@ -14,15 +14,25 @@ type Section = {
 export type PathSections = {
   start: number;
   end: number;
-  color: Float32Array;
+  headColor: Float32Array;
+  tailColor: Float32Array;
   sections: Section[];
 };
 
-export const usePathSections = (count: number): PathSections | null => {
+export type UsePathSectionsProps = {
+  count: number;
+  headColor: Color;
+  tailColor?: Color | undefined;
+};
+
+export const usePathSections = (
+  props: UsePathSectionsProps
+): PathSections | null => {
   const [sections, setSections] = useState<PathSections | null>(null);
+  const { count } = props;
 
   useEffect(() => {
-    const items = createPathSections(count);
+    const items = createPathSections(props);
 
     setSections(items);
 
@@ -34,17 +44,22 @@ export const usePathSections = (count: number): PathSections | null => {
   return sections;
 };
 
-export const createPathSections = (count: number): PathSections => {
-  const color = Skia.Color('lightblue');
-
+export const createPathSections = ({
+  count,
+  headColor,
+  tailColor
+}: UsePathSectionsProps): PathSections => {
+  const hColor = Skia.Color(headColor);
+  const tColor = Skia.Color(tailColor ?? headColor);
   return {
     start: 0,
     end: 0,
-    color,
+    headColor: hColor,
+    tailColor: tColor,
     sections: Array.from({ length: count }).map(() => ({
       start: makeMutable(0),
       end: makeMutable(0),
-      color: makeMutable(color)
+      color: makeMutable(hColor)
     }))
   };
 };

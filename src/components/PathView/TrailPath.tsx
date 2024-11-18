@@ -30,7 +30,13 @@ import {
 } from 'react-native-reanimated';
 
 import { getAngularDiff } from '@helpers/getAngularDiff';
-import { debugMsg2, debugMsg } from '@helpers/global';
+import {
+  debugMsg2,
+  debugMsg3,
+  debugMsg4,
+  debugMsg5,
+  debugMsg
+} from '@helpers/global';
 import { Mutable } from '@types';
 import { updatePathSections } from './updatePathSections';
 import { usePathSections } from './usePathSections';
@@ -40,9 +46,13 @@ const { createLogger } = require('@helpers/log');
 const log = createLogger('TrailPath');
 
 export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
+  // position of the head
   t: SharedValue<number>;
+
+  // maximum distance the tail can be from the head
   trailLength: number;
 
+  // the number of sections to divide the trail into
   trailDivisions: number;
 
   // how fast the trail fades away
@@ -53,6 +63,9 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
 
   // whether the trail can wrap around the path
   isWrapped?: boolean;
+
+  // color of the tail - only useful if trailDivisions > 1
+  tailColor?: Color;
 };
 
 export const TrailPath = ({
@@ -62,11 +75,16 @@ export const TrailPath = ({
   trailDivisions = 1,
   isFollow = false,
   isWrapped = false,
+  tailColor,
   ...pathProps
 }: TrailPathProps) => {
   const tailT = useSharedValue(t.value);
 
-  const pathSections = usePathSections(trailDivisions + 2);
+  const pathSections = usePathSections({
+    count: trailDivisions + 2,
+    headColor: pathProps.color as Color,
+    tailColor: tailColor as Color
+  });
 
   useFrameCallback((frameInfo) => {
     const headValue = t.value;
@@ -84,15 +102,19 @@ export const TrailPath = ({
       // if the trail is close to the target, just set it to the target
       if (Math.abs(aDiff) < 0.005) {
         tailValue = headValue;
-        // isSame = true;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} =`;
+      } else if (Math.abs(aDiff) > trailLength) {
+        tailValue = headValue - Math.sign(aDiff) * (trailLength - 0.001);
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
       } else {
         tailValue += Math.sign(aDiff) * inc;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} <`;
       }
 
       tailT.value = ((tailValue % 1) + 1) % 1;
 
-      // debugMsg.value = `t: ${headValue.toFixed(3)}`;
-      // debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} inc ${(Math.sign(aDiff) * inc).toFixed(3)}`;
+      debugMsg.value = `t: ${headValue.toFixed(3)}`;
+      // debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
     }
 
     if (pathSections) {
@@ -104,6 +126,14 @@ export const TrailPath = ({
         trailDivisions,
         isWrapped
       );
+      debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${trailDivisions}`;
+
+      const { start: start1, end: end1 } = pathSections.sections[0];
+      const { start: start2, end: end2 } = pathSections.sections[1];
+      const { start: start3, end: end3 } = pathSections.sections[2];
+      debugMsg3.value = `start1: ${start1.value.toFixed(3)} end1: ${end1.value.toFixed(3)}`;
+      debugMsg4.value = `start2: ${start2.value.toFixed(3)} end2: ${end2.value.toFixed(3)}`;
+      debugMsg5.value = `start3: ${start3.value.toFixed(3)} end3: ${end3.value.toFixed(3)}`;
     }
   });
 
@@ -119,7 +149,7 @@ export const TrailPath = ({
           start={section.start}
           end={section.end}
           color={section.color}
-          strokeCap={index === 0 || index === len ? 'round' : 'butt'}
+          // strokeCap={index === 0 || index === len ? 'round' : 'butt'}
         >
           {/* <BlurMask blur={blur} style='solid' /> */}
         </Path>

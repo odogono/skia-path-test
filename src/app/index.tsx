@@ -8,7 +8,13 @@ import { useSharedValue } from 'react-native-reanimated';
 import { PathView } from '@components/PathView/PathView';
 import { ReText } from '@components/ReText';
 import { WorldCanvas } from '@components/WorldCanvas/WorldCanvas';
-import { debugMsg2, debugMsg } from '@helpers/global';
+import {
+  debugMsg2,
+  debugMsg3,
+  debugMsg4,
+  debugMsg5,
+  debugMsg
+} from '@helpers/global';
 import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
@@ -31,6 +37,9 @@ export const Index = () => {
             <View style={styles.sliderContainer}>
               <ReText style={styles.debugText} text={debugMsg} />
               <ReText style={styles.debugText} text={debugMsg2} />
+              <ReText style={styles.debugText} text={debugMsg3} />
+              <ReText style={styles.debugText} text={debugMsg4} />
+              <ReText style={styles.debugText} text={debugMsg5} />
               <Slider
                 minimumValue={minValue}
                 maximumValue={maxValue}

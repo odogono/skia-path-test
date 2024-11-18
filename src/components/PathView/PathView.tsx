@@ -112,17 +112,18 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
       />
       <TrailPath
         path={path}
-        color='lightblue'
+        color='blue'
         style='stroke'
         strokeWidth={10}
         strokeCap='round'
         strokeJoin='round'
         t={t}
         trailLength={0.3}
-        isFollow={true}
-        trailDecay={0.19}
-        isWrapped={true}
-        trailDivisions={1}
+        isFollow={false}
+        trailDecay={0.05}
+        isWrapped={false}
+        trailDivisions={10}
+        tailColor='red'
       />
       <Circle cx={cx} cy={cy} r={5} color='white' />
     </Group>
