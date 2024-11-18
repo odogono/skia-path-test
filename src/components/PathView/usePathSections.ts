@@ -35,7 +35,7 @@ export const usePathSections = (count: number): PathSections | null => {
 };
 
 export const createPathSections = (count: number): PathSections => {
-  const color = Skia.Color('lightblue'); // new Float32Array([0.678, 0.847, 0.901, 1]);
+  const color = Skia.Color('lightblue');
 
   return {
     start: 0,

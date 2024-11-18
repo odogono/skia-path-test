@@ -118,11 +118,11 @@ export const PathView = ({ t: tProp }: PathViewProps) => {
         strokeCap='round'
         strokeJoin='round'
         t={t}
-        trailLength={0.1}
+        trailLength={0.3}
         isFollow={true}
         trailDecay={0.19}
         isWrapped={true}
-        trailDivisions={5}
+        trailDivisions={1}
       />
       <Circle cx={cx} cy={cy} r={5} color='white' />
     </Group>

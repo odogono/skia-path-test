@@ -68,8 +68,6 @@ export const TrailPath = ({
 
   const pathSections = usePathSections(trailDivisions + 2);
 
-  // console.log('oh boy', Skia.Color('lightblue'));
-
   useFrameCallback((frameInfo) => {
     const headValue = t.value;
     let tailValue = tailT.value;
