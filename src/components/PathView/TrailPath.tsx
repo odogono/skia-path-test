@@ -78,7 +78,7 @@ export const TrailPath = ({
   tailColor,
   ...pathProps
 }: TrailPathProps) => {
-  const tailT = useSharedValue(t.value);
+  const tailT = useSharedValue(0);
 
   const pathSections = usePathSections({
     count: trailDivisions + 2,
@@ -126,7 +126,7 @@ export const TrailPath = ({
         trailDivisions,
         isWrapped
       );
-      debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${trailDivisions}`;
+      debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${aDiff.toFixed(3)}`;
 
       const { start: start1, end: end1 } = pathSections.sections[0];
       const { start: start2, end: end2 } = pathSections.sections[1];
@@ -138,7 +138,6 @@ export const TrailPath = ({
   });
 
   const blur = 20;
-  const len = pathSections?.sections.length;
 
   return (
     <>
@@ -151,7 +150,7 @@ export const TrailPath = ({
           color={section.color}
           // strokeCap={index === 0 || index === len ? 'round' : 'butt'}
         >
-          {/* <BlurMask blur={blur} style='solid' /> */}
+          <BlurMask blur={blur} style='solid' />
         </Path>
       ))}
     </>

@@ -1,7 +1,25 @@
-import { Stack } from '@helpers/router';
+import { useEffect } from 'react';
 
-export const RootLayout = () => {
-  return <Stack />;
-};
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 
-export default RootLayout;
+import 'react-native-reanimated';
+
+import { View } from 'react-native';
+
+// Prevent the splash screen from auto-hiding before asset loading is complete.
+SplashScreen.preventAutoHideAsync();
+
+export default function RootLayout() {
+  useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  return (
+    <View style={{ flex: 1, backgroundColor: 'black' }}>
+      <Stack>
+        <Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+      </Stack>
+    </View>
+  );
+}

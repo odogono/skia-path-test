@@ -13,6 +13,8 @@ export type ContourMeasure = [SkContourMeasure | null, number];
 
 export const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
   const position = useSharedValue<Position>([0, 0]);
+  const tangent = useSharedValue<Position>([0, 0]);
+
   const contourMeasure = useSharedValue<ContourMeasure>([null, 0]);
 
   useEffect(() => {
@@ -27,21 +29,15 @@ export const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
     (t) => {
       const [contour, totalLength] = contourMeasure.value;
       const length = t * totalLength;
-      const [pos] = contour?.getPosTan(length) ?? [{ x: 0, y: 0 }];
+      const [pos, tan] = contour?.getPosTan(length) ?? [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 }
+      ];
 
       position.value = [pos.x, pos.y];
+      tangent.value = [tan.x, tan.y];
     }
   );
 
-  const getPosAtT = useCallback(
-    (t: number) => {
-      const [contour, totalLength] = contourMeasure.value;
-      const length = t * totalLength;
-      const [pos] = contour?.getPosTan(length) ?? [{ x: 0, y: 0 }];
-      return [pos.x, pos.y];
-    },
-    [contourMeasure]
-  );
-
-  return { position, getPosAtT, contourMeasure };
+  return { position, tangent, contourMeasure };
 };

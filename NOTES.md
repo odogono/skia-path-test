@@ -62,3 +62,4 @@ The problem of course is that you can't just set a Text component, because it wi
 
 The solution is to use something like the [Retext](https://github.com/wcandillon/react-native-redash/blob/master/src/ReText.tsx) component.
 What it does is to create an Animated version of a TextInput, and then you can pass in a shared value to it.
+

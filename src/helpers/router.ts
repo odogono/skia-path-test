@@ -1,6 +1,13 @@
 import { router as expoRouter, type Href, type Router } from 'expo-router';
 
-export { Redirect, Slot, Stack, useLocalSearchParams } from 'expo-router';
+export {
+  Link,
+  Redirect,
+  Slot,
+  Stack,
+  useLocalSearchParams,
+  useRouter
+} from 'expo-router';
 
 // https://github.com/expo/router/discussions/495
 

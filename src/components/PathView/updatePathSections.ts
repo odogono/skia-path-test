@@ -1,10 +1,3 @@
-import {
-  interpolate,
-  interpolateColor,
-  runOnJS,
-  runOnUI
-} from 'react-native-reanimated';
-
 import { getAngularDiff } from '@helpers/getAngularDiff';
 import { debugMsg2, debugMsg } from '@helpers/global';
 import { PathSections } from './usePathSections';

@@ -18,7 +18,7 @@ import {
 import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
-export const Index = () => {
+export const Path = () => {
   const t = useSharedValue(0);
 
   const minValue = -1;
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#444'
+    backgroundColor: '#161e27'
   },
   sliderContainer: {
     position: 'absolute',
@@ -81,4 +81,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default Index;
+export default Path;
