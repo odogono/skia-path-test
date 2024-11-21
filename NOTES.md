@@ -53,6 +53,8 @@ The trail is a single colour, what would it take to have a sort of gradient with
 
 
 
+YOU CANT HAVE A SHARED VALUE INSIDE ANOTHER SHARED VALUE.
+
 
 ### Protip
 

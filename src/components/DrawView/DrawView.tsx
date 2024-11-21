@@ -3,6 +3,7 @@ import React, {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useState
 } from 'react';
 import { StyleSheet } from 'react-native';
@@ -12,6 +13,8 @@ import {
   Group,
   Path,
   Rect,
+  SkContourMeasure,
+  SkPoint,
   Skia,
   useCanvasRef,
   type PathProps,
@@ -21,20 +24,24 @@ import {
 import { GestureDetector } from 'react-native-gesture-handler';
 import {
   Easing,
+  SharedValue,
   runOnJS,
   useAnimatedReaction,
+  useDerivedValue,
   useSharedValue,
   withRepeat,
   withTiming
 } from 'react-native-reanimated';
 
+import { TrailPath } from '@components/PathView/TrailPath';
+import { ContourMeasure } from '@components/PathView/types';
 import { createLogger } from '@helpers/log';
-import { useStore, useStoreViewDims } from '@model/useStore';
-import { useStoreActions } from '@model/useStoreActions';
-import type { Position } from '@types';
+import type { Mutable, Position } from '@types';
+import { setAnimatedTimeout } from '../../helpers/animatedTimeout';
 import { simplify } from '../../helpers/simplify';
-import { TrailPath } from '../PathView/TrailPath';
+import { PathState } from './types';
 import { useGestures } from './useGestures';
+import { usePathStates } from './usePathStates';
 
 // import { DrawViewRef } from './types';
 // import { useGestures } from './useGestures';
@@ -45,19 +52,16 @@ export type DrawViewProps = React.PropsWithChildren<{
 
 const log = createLogger('DrawView');
 
-type PathState = {
-  id: string;
-  length: number;
-  path: SkPath;
-};
-
 export const DrawView = ({ children, onReady }: DrawViewProps) => {
   const canvasRef = useCanvasRef();
-  const { gesture, paths, path } = useGestures();
+  const { gesture, paths, isPathsInited } = useGestures();
   const [viewDims, setViewDims] = useState<Position | null>(null);
 
-  const [simplifiedPath, setSimplifiedPath] = useState<PathState | null>(null);
-  const [pathLength, setPathLength] = useState<number>(0);
+  // const [pathStates, setPathStates] = useState<PathState[]>([]);
+
+  // const [simplifiedPath, setSimplifiedPath] = useState<PathState | null>(null);
+  // const [pathLength, setPathLength] = useState<number>(0);
+  // const { applyPath, inc, states: pathStates } = usePathStates();
 
   const viewMatrix = useSharedValue(Skia.Matrix());
 
@@ -87,37 +91,89 @@ export const DrawView = ({ children, onReady }: DrawViewProps) => {
   //   setPathLength(3);
   // }, []);
 
-  const applyPath = useCallback(
-    (id: string, points: Position[], length: number) => {
-      const simplified = simplify(points, 1, true);
-      const skPath = Skia.Path.Make();
+  // const applyPath = useCallback(
+  //   (id: string, points: Position[], length: number) => {
+  //     const simplified = simplify(points, 1, true);
+  //     const skPath = Skia.Path.Make();
 
-      skPath.moveTo(simplified[0][0], simplified[0][1]);
-      // log.debug('moveTo', simplified[0][0], simplified[0][1]);
-      for (let ii = 1; ii < simplified.length; ii++) {
-        skPath.lineTo(simplified[ii][0], simplified[ii][1]);
-        // log.debug('lineTo', simplified[ii][0], simplified[ii][1]);
-      }
+  //     skPath.moveTo(simplified[0][0], simplified[0][1]);
+  //     // log.debug('moveTo', simplified[0][0], simplified[0][1]);
+  //     for (let ii = 1; ii < simplified.length; ii++) {
+  //       skPath.lineTo(simplified[ii][0], simplified[ii][1]);
+  //       // log.debug('lineTo', simplified[ii][0], simplified[ii][1]);
+  //     }
 
-      // log.debug('path', length, 'simplified', simplified.length);
+  //     log.debug('path', length, 'simplified', simplified.length);
 
-      setSimplifiedPath({ id, length, path: skPath });
-      setPathLength(length);
-    },
-    [path]
-  );
+  //     const it = Skia.ContourMeasureIter(skPath, false, 1);
+  //     const contour = it.next();
+  //     const totalLength = contour?.length() ?? 0;
+  //     const [pos, tan] = contour?.getPosTan(totalLength) ?? [
+  //       { x: 0, y: 0 },
+  //       { x: 0, y: 0 }
+  //     ];
 
-  useAnimatedReaction(
-    () => path.value,
-    ({ id, length, points, isClosed }) => {
-      if (isClosed) {
-        runOnJS(applyPath)(id, points, length);
-        // runOnJS(log.debug)('path', length, isClosed);
-      }
-    }
-  );
+  //     setSimplifiedPath({
+  //       id,
+  //       length,
+  //       path: skPath,
+  //       headPos: pos,
+  //       headTan: tan
+  //     });
+  //     setPathLength(length);
+  //   },
+  //   [path]
+  // );
 
-  // log.debug('render');
+  // useEffect(() => {
+  //   log.debug('gPathState', gPathState.id, gPathState.isInUse);
+  // }, []);
+
+  // react to a changing path value
+  // useAnimatedReaction(
+  //   () => path.value,
+  //   ({ id, points, isClosed }) => {
+  //     if (isClosed) {
+  //       // runOnJS(applyPath)(id, points, length);
+  //       applyPath(id, points);
+  //       runOnJS(log.debug)('path', id, points.length, isClosed);
+  //     }
+  //   }
+  // );
+
+  // const updatePathStates = useCallback((states: PathState[]) => {
+  //   // setPathStates(states);
+  // }, []);
+
+  // useAnimatedReaction(
+  //   () => pathStates.value,
+  //   (states) => {
+  //     runOnJS(log.debug)('states', states.length);
+  //     // runOnJS(setPathStates)(states);
+  //     setAnimatedTimeout(() => {
+  //       runOnJS(log.debug)('states', states.length);
+  //       // runOnJS(setPathStates)(states);
+  //     }, 1000);
+  //   }
+  // );
+
+  // useAnimatedReaction(
+  //   () => [inc.value, states.value] as [number, PathState[]],
+  //   ([inc, states]) => {
+  //     const filtered = states.filter((s) => s.isInUse);
+  //     runOnJS(log.debug)('states updated', inc, filtered?.length);
+  //     // runOnJS(updatePathStates)(filtered);
+  //   }
+  // );
+
+  // useAnimatedReaction(
+  //   () => paths.value,
+  //   (states) => {
+  //     runOnJS(log.debug)('paths', states.length);
+  //   }
+  // );
+
+  log.debug('render', { isPathsInited }, paths.length);
   return (
     <>
       <GestureDetector gesture={gesture}>
@@ -131,27 +187,15 @@ export const DrawView = ({ children, onReady }: DrawViewProps) => {
         >
           {viewDims && (
             <Group>
-              {children}
-              <Rect x={0} y={0} width={100} height={100} color='red' />
-              {/* {paths.map((p, index) => (
-                <Path
-                  key={index}
-                  path={p.segments.join(' ')}
-                  strokeWidth={5}
-                  style='stroke'
-                  color={p.color}
-                />
-              ))} */}
-              {simplifiedPath && (
+              {paths.map((state) => (
                 <DrawTrail
-                  key={`dt-${simplifiedPath.id}`}
-                  path={simplifiedPath.path}
-                  length={simplifiedPath.length}
+                  key={`dt-${state.id}`}
+                  {...state}
                   strokeWidth={5}
                   style='stroke'
                   color='lightblue'
                 />
-              )}
+              ))}
             </Group>
           )}
         </Canvas>
@@ -160,60 +204,141 @@ export const DrawView = ({ children, onReady }: DrawViewProps) => {
   );
 };
 
-type DrawTrailProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
-  path: SkPath;
-  length: number;
-};
+type DrawTrailProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & PathState;
 
-const DrawTrail = ({ path, length, ...props }: DrawTrailProps) => {
+const DrawTrail = ({
+  path,
+  length,
+  headPos,
+  headTan,
+  id,
+  isInUse,
+  ...props
+}: DrawTrailProps) => {
   const t = useSharedValue(0);
+  const tailValue = useSharedValue(0);
+  const [showArrowHead, setShowArrowHead] = useState(true);
+  // const { position, tangent } = usePathPosition(path, t);
 
-  const isNew = length <= 2;
+  // called when the path changes its isInUse value
+  useAnimatedReaction(
+    () => isInUse.value,
+    (isInUse) => {
+      runOnJS(log.debug)('>isInUse DrawTrail', id, isInUse);
 
-  useEffect(() => {
-    // t.value = 0;
-    t.value = withTiming(1, { duration: 2000, easing: Easing.linear }, () => {
-      // t.value = 0;
-    });
-    // (t.value = withRepeat(
-    //   withTiming(1, { duration: 3000, easing: Easing.linear }),
-    //   -1,
-    //   false
-    // ));
-    log.debug('[DrawTrail] onMount');
-    // log.debug('restart', t.value, length);
-  }, []);
+      if (isInUse) {
+        // this trail has become active - so reset the various animated values
+        t.value = 0;
+        tailValue.value = 0;
+        t.value = withTiming(1, { duration: 100, easing: Easing.linear });
+        runOnJS(setShowArrowHead)(true);
+      }
+    }
+  );
 
-  // return <Path path={path} {...props} />;
-  // return (
-  //   <TrailPath
-  //     {...props}
-  //     path={path}
-  //     t={t}
-  //     isFollow={true}
-  //     trailDecay={0.01}
-  //     trailLength={0.4}
-  //     trailDivisions={2}
-  //     tailColor='lightblue'
-  //   />
-  // );
+  useAnimatedReaction(
+    () => tailValue.value,
+    (tailValue) => {
+      if (tailValue > 0.99) {
+        runOnJS(setShowArrowHead)(false);
+      }
+    }
+  );
+
+  log.debug('DrawTrail', id, isInUse);
+
+  if (!isInUse) {
+    return null;
+  }
 
   return (
-    <TrailPath
-      path={path}
-      color='white'
-      style='stroke'
-      strokeWidth={5}
-      t={t}
-      trailLength={0.45}
-      isFollow={true}
-      trailDecay={0.3}
-      isWrapped={false}
-      trailDivisions={12}
-      // tailColor='black'
-      tailColor='#161e27'
-    />
+    <>
+      <TrailPath
+        path={path}
+        color='white'
+        style='stroke'
+        strokeWidth={5}
+        t={t}
+        tailValue={tailValue}
+        trailLength={0.9}
+        isFollow={true}
+        trailDecay={0.5}
+        isWrapped={false}
+        trailDivisions={12}
+        // tailColor='black'
+        tailColor='#161e27'
+      />
+      {showArrowHead && <ArrowHead position={headPos} tangent={headTan} />}
+    </>
   );
+};
+
+const ArrowHead = ({
+  position,
+  tangent
+}: {
+  position: Mutable<SkPoint>;
+  tangent: Mutable<SkPoint>;
+}) => {
+  const headMatrix = useSharedValue(Skia.Matrix());
+
+  const path = useMemo(() => {
+    const p = Skia.Path.Make();
+    p.moveTo(-5, -5);
+    p.lineTo(0, 5);
+    p.lineTo(5, -5);
+    p.close();
+    return p;
+  }, []);
+
+  useAnimatedReaction(
+    () => [position.value, tangent.value],
+    ([position, tangent]) => {
+      headMatrix.modify((m) => {
+        m.identity();
+        m.translate(position.x, position.y);
+        m.scale(1.5, 1.5);
+        m.rotate(Math.atan2(tangent.y, tangent.x) - Math.PI / 2);
+        return m;
+      });
+    }
+  );
+
+  return (
+    <Group matrix={headMatrix}>
+      <Path path={path} color='white' style='fill' />
+    </Group>
+  );
+};
+
+const usePathPosition = (path: SkPath, t: SharedValue<number>) => {
+  const position = useSharedValue<Position>([0, 0]);
+  const tangent = useSharedValue<Position>([0, 0]);
+  const contourMeasure = useSharedValue<ContourMeasure>([null, 0]);
+
+  useEffect(() => {
+    const it = Skia.ContourMeasureIter(path, false, 1);
+    const contour: SkContourMeasure = it.next();
+    const totalLength = contour?.length() ?? 0;
+    contourMeasure.value = [contour, totalLength] as ContourMeasure;
+  }, [path]);
+
+  useAnimatedReaction(
+    () => t.value,
+    (t) => {
+      const [contour, totalLength] = contourMeasure.value;
+      const length = t * totalLength;
+      const [pos, tan] = contour?.getPosTan(length) ?? [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 }
+      ];
+
+      position.value = [pos.x, pos.y];
+      tangent.value = [tan.x, tan.y];
+    }
+  );
+
+  return { position, tangent };
 };
 
 const styles = StyleSheet.create({

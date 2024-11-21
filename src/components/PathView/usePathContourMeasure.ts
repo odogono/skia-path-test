@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react';
 
-import { SkContourMeasure, SkPath, Skia } from '@shopify/react-native-skia';
+import { SkPath, Skia } from '@shopify/react-native-skia';
 import {
   SharedValue,
   useAnimatedReaction,
@@ -8,8 +8,7 @@ import {
 } from 'react-native-reanimated';
 
 import { Position } from '@types';
-
-export type ContourMeasure = [SkContourMeasure | null, number];
+import { ContourMeasure } from './types';
 
 export const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
   const position = useSharedValue<Position>([0, 0]);

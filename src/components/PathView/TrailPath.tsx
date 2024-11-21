@@ -49,6 +49,9 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
   // position of the head
   t: SharedValue<number>;
 
+  // position of the tail
+  tailValue?: SharedValue<number>;
+
   // maximum distance the tail can be from the head
   trailLength: number;
 
@@ -70,6 +73,7 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
 
 export const TrailPath = ({
   t,
+  tailValue,
   trailLength,
   trailDecay = 0.2,
   trailDivisions = 1,
@@ -78,7 +82,8 @@ export const TrailPath = ({
   tailColor,
   ...pathProps
 }: TrailPathProps) => {
-  const tailT = useSharedValue(0);
+  // strange how this works - normally hooks cannot be conditionally called
+  const tailT = tailValue ?? useSharedValue(0);
 
   const pathSections = usePathSections({
     count: trailDivisions + 2,
@@ -90,9 +95,9 @@ export const TrailPath = ({
     const headValue = t.value;
     let tailValue = tailT.value;
 
-    const aDiff = getAngularDiff(tailValue, headValue);
-
-    // const diff = tailValue - headValue;
+    const aDiff = isWrapped
+      ? getAngularDiff(tailValue, headValue)
+      : headValue - tailValue;
 
     if (isFollow) {
       const delta = (frameInfo.timeSincePreviousFrame ?? 0) / 1000;
@@ -108,13 +113,17 @@ export const TrailPath = ({
         // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
       } else {
         tailValue += Math.sign(aDiff) * inc;
-        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} <`;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} < ${aDiff.toFixed(3)}`;
       }
 
-      tailT.value = ((tailValue % 1) + 1) % 1;
+      if (isWrapped) {
+        tailT.value = ((tailValue % 1) + 1) % 1;
+      } else {
+        tailT.value = tailValue;
+      }
 
       debugMsg.value = `t: ${headValue.toFixed(3)}`;
-      // debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
+      debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
     }
 
     if (pathSections) {
@@ -126,7 +135,7 @@ export const TrailPath = ({
         trailDivisions,
         isWrapped
       );
-      debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${aDiff.toFixed(3)}`;
+      // debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${aDiff.toFixed(3)}`;
 
       const { start: start1, end: end1 } = pathSections.sections[0];
       const { start: start2, end: end2 } = pathSections.sections[1];

@@ -83,11 +83,6 @@ function simplifyDPStep(
     }
   }
 
-  // if (index === -1) {
-  //   console.log('index === -1');
-  //   return;
-  // }
-
   if (maxSqDist > sqTolerance) {
     if (index - first > 1)
       simplifyDPStep(points, first, index, sqTolerance, simplified);

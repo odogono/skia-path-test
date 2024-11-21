@@ -1,78 +1,87 @@
 /* eslint-disable react-compiler/react-compiler */
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
+import { SkPoint, Skia } from '@shopify/react-native-skia';
 import { Gesture } from 'react-native-gesture-handler';
-import { runOnJS, useSharedValue } from 'react-native-reanimated';
+import { makeMutable, runOnJS, useSharedValue } from 'react-native-reanimated';
 
 import { createLogger } from '@helpers/log';
 import { useStore } from '@model/useStore';
 import type { Position, WorldTouchEventCallback } from '@types';
-
-interface IPath {
-  segments: String[];
-  color?: string;
-}
-
-type PPath = {
-  isClosed: boolean;
-  id: string;
-  length: number;
-  points: Position[];
-};
+import { PathState } from './types';
 
 const log = createLogger('useGestures');
 
+const PATH_MAX = 5;
 let pathCount = 0;
 
-export const useGestures = () => {
-  const [paths, setPaths] = useState<IPath[]>([]);
-
-  const path = useSharedValue<PPath>({
-    isClosed: false,
-    id: `path-${pathCount++}`,
+const createPathState = (idx: number) => {
+  return {
+    id: `path-${idx}`,
+    isInUse: makeMutable(false),
     length: 0,
-    points: []
-  });
+    path: makeMutable(Skia.Path.Make()),
+    headPos: makeMutable(Skia.Point(0, 0)),
+    headTan: makeMutable(Skia.Point(0, 0))
+  };
+};
+
+export const useGestures = () => {
+  // const pathCount = useSharedValue(0);
+  const pathInUseIndex = useSharedValue(0);
+
+  // const paths = useSharedValue<PathState[]>([]);
+  const [paths, setPaths] = useState<PathState[]>([]);
+  const [isPathsInited, setIsPathsInited] = useState(false);
+
+  useEffect(() => {
+    const states = Array(PATH_MAX)
+      .fill(0)
+      .map((_, idx) => createPathState(idx));
+
+    setPaths(states);
+    // setIsPathsInited(true);
+  }, []);
 
   const pan = Gesture.Pan()
     .onStart((g) => {
-      // const newPaths = [...paths];
-      // newPaths[paths.length] = {
-      //   segments: [],
-      //   color: '#06d6a0'
-      // };
-      // newPaths[paths.length].segments.push(`M ${g.x} ${g.y}`);
-      // runOnJS(setPaths)(newPaths);
+      pathInUseIndex.value = (pathInUseIndex.value + 1) % PATH_MAX;
 
-      path.value = {
-        id: `path-${pathCount++}`,
-        isClosed: false,
-        length: 1,
-        points: [[g.x, g.y]]
-      };
+      const state = paths[pathInUseIndex.value];
 
-      runOnJS(log.debug)('onStart', g.x, g.y);
+      const path = state.path.value;
+      path.reset();
+      path.moveTo(g.x, g.y);
+      state.path.value = path;
+
+      state.headPos.value = Skia.Point(g.x, g.y);
+      state.headTan.value = Skia.Point(0, 0);
+      state.isInUse.value = true;
     })
     .onUpdate((g) => {
-      // const index = paths.length - 1;
-      // const newPaths = [...paths];
-      // if (newPaths?.[index]?.segments) {
-      //   newPaths[index].segments.push(`L ${g.x} ${g.y}`);
+      const state = paths[pathInUseIndex.value];
 
-      //   // runOnJS(setPaths)(newPaths);
-      // }
-      const { length, points, id } = path.value;
+      const path = state.path.value;
+      path.lineTo(g.x, g.y);
 
-      points.push([g.x, g.y]);
-      path.value = { id, length: length + 1, points, isClosed: true };
+      const it = Skia.ContourMeasureIter(path, false, 1);
+      const contour = it.next();
+      const totalLength = contour?.length() ?? 0;
+      const [pos, tan] = contour?.getPosTan(totalLength) ?? [
+        { x: 0, y: 0 },
+        { x: 0, y: 0 }
+      ];
+      state.headPos.value = pos;
+      state.headTan.value = tan;
+      state.length = totalLength;
     })
     .onEnd(() => {
-      runOnJS(log.debug)('onEnd');
-      // path.value = { ...path.value, isClosed: true };
+      const state = paths[pathInUseIndex.value];
+      state.isInUse.value = false;
     })
     .minDistance(1);
 
   const gesture = Gesture.Simultaneous(pan);
 
-  return { gesture, paths, path };
+  return { gesture, paths, isPathsInited };
 };
