@@ -20,7 +20,7 @@ export const Draw = () => {
     <FiberProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <DrawView></DrawView>
+          <DrawView />
 
           <View style={styles.sliderContainer}>
             <ReText style={styles.debugText} text={debugMsg} />

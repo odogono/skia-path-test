@@ -6,14 +6,11 @@ import { Gesture } from 'react-native-gesture-handler';
 import { makeMutable, runOnJS, useSharedValue } from 'react-native-reanimated';
 
 import { createLogger } from '@helpers/log';
-import { useStore } from '@model/useStore';
-import type { Position, WorldTouchEventCallback } from '@types';
 import { PathState } from './types';
 
 const log = createLogger('useGestures');
 
 const PATH_MAX = 5;
-let pathCount = 0;
 
 const createPathState = (idx: number) => {
   return {
@@ -26,13 +23,10 @@ const createPathState = (idx: number) => {
   };
 };
 
-export const useGestures = () => {
-  // const pathCount = useSharedValue(0);
+export const useDrawGesture = () => {
   const pathInUseIndex = useSharedValue(0);
 
-  // const paths = useSharedValue<PathState[]>([]);
   const [paths, setPaths] = useState<PathState[]>([]);
-  const [isPathsInited, setIsPathsInited] = useState(false);
 
   useEffect(() => {
     const states = Array(PATH_MAX)
@@ -40,7 +34,6 @@ export const useGestures = () => {
       .map((_, idx) => createPathState(idx));
 
     setPaths(states);
-    // setIsPathsInited(true);
   }, []);
 
   const pan = Gesture.Pan()
@@ -83,5 +76,5 @@ export const useGestures = () => {
 
   const gesture = Gesture.Simultaneous(pan);
 
-  return { gesture, paths, isPathsInited };
+  return { gesture, paths };
 };

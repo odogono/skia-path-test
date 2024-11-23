@@ -19,7 +19,7 @@ import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
 export const Path = () => {
-  const t = useSharedValue(0);
+  const head = useSharedValue(0);
 
   const minValue = -1;
   const maxValue = 1;
@@ -31,7 +31,7 @@ export const Path = () => {
         <View style={styles.container}>
           <StoreProvider>
             <WorldCanvas>
-              <PathView t={t} />
+              <PathView head={head} />
             </WorldCanvas>
 
             <View style={styles.sliderContainer}>
@@ -43,13 +43,13 @@ export const Path = () => {
               <Slider
                 minimumValue={minValue}
                 maximumValue={maxValue}
-                value={t.value}
+                value={head.value}
                 step={step}
                 trackMarks={[minValue, 0, maxValue]}
-                renderTrackMarkComponent={({ value }) => (
+                renderTrackMarkComponent={() => (
                   <View style={styles.trackMark} />
                 )}
-                onValueChange={(value) => (t.value = value[0])}
+                onValueChange={(value) => (head.value = value[0])}
               />
             </View>
           </StoreProvider>

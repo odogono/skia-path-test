@@ -2,31 +2,15 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   BlurMask,
-  Circle,
   Color,
-  CornerPathEffect,
-  Group,
   Path,
   PathProps,
-  Rect,
-  SkContourMeasure,
-  SkPath,
-  SkPoint,
-  Skia,
   SkiaDefaultProps
 } from '@shopify/react-native-skia';
 import {
-  Easing,
   SharedValue,
-  cancelAnimation,
-  makeMutable,
-  runOnJS,
-  useAnimatedReaction,
-  useDerivedValue,
   useFrameCallback,
-  useSharedValue,
-  withRepeat,
-  withTiming
+  useSharedValue
 } from 'react-native-reanimated';
 
 import { getAngularDiff } from '@helpers/getAngularDiff';
@@ -47,10 +31,10 @@ const log = createLogger('TrailPath');
 
 export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
   // position of the head
-  t: SharedValue<number>;
+  head: SharedValue<number>;
 
   // position of the tail
-  tailValue?: SharedValue<number>;
+  tail?: SharedValue<number>;
 
   // maximum distance the tail can be from the head
   trailLength: number;
@@ -72,8 +56,8 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
 };
 
 export const TrailPath = ({
-  t,
-  tailValue,
+  head,
+  tail,
   trailLength,
   trailDecay = 0.2,
   trailDivisions = 1,
@@ -83,7 +67,7 @@ export const TrailPath = ({
   ...pathProps
 }: TrailPathProps) => {
   // strange how this works - normally hooks cannot be conditionally called
-  const tailT = tailValue ?? useSharedValue(0);
+  const tailT = tail ?? useSharedValue(0);
 
   const pathSections = usePathSections({
     count: trailDivisions + 2,
@@ -92,7 +76,7 @@ export const TrailPath = ({
   });
 
   useFrameCallback((frameInfo) => {
-    const headValue = t.value;
+    const headValue = head.value;
     let tailValue = tailT.value;
 
     const aDiff = isWrapped
@@ -122,8 +106,8 @@ export const TrailPath = ({
         tailT.value = tailValue;
       }
 
-      debugMsg.value = `t: ${headValue.toFixed(3)}`;
-      debugMsg2.value = `tailT: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
+      debugMsg.value = `head: ${headValue.toFixed(3)}`;
+      debugMsg2.value = `tail: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
     }
 
     if (pathSections) {
