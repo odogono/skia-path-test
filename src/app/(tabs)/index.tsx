@@ -23,11 +23,11 @@ export const Draw = () => {
           <DrawView />
 
           <View style={styles.sliderContainer}>
-            <ReText style={styles.debugText} text={debugMsg} />
+            {/* <ReText style={styles.debugText} text={debugMsg} />
             <ReText style={styles.debugText} text={debugMsg2} />
             <ReText style={styles.debugText} text={debugMsg3} />
             <ReText style={styles.debugText} text={debugMsg4} />
-            <ReText style={styles.debugText} text={debugMsg5} />
+            <ReText style={styles.debugText} text={debugMsg5} /> */}
           </View>
         </View>
       </GestureHandlerRootView>

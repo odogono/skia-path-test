@@ -35,12 +35,12 @@ export const Path = () => {
             </WorldCanvas>
 
             <View style={styles.sliderContainer}>
-              <ReText style={styles.debugText} text={debugMsg} />
+              {/* <ReText style={styles.debugText} text={debugMsg} />
               <ReText style={styles.debugText} text={debugMsg2} />
               <ReText style={styles.debugText} text={debugMsg3} />
-              <ReText style={styles.debugText} text={debugMsg4} />
-              <ReText style={styles.debugText} text={debugMsg5} />
-              <Slider
+              <ReText style={styles.debugText} text={debugMsg4} /> */}
+              {/* <ReText style={styles.debugText} text={debugMsg5} /> */}
+              {/* <Slider
                 minimumValue={minValue}
                 maximumValue={maxValue}
                 value={head.value}
@@ -50,7 +50,7 @@ export const Path = () => {
                   <View style={styles.trackMark} />
                 )}
                 onValueChange={(value) => (head.value = value[0])}
-              />
+              /> */}
             </View>
           </StoreProvider>
         </View>

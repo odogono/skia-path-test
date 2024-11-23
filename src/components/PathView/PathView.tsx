@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   BlurMask,
@@ -18,6 +18,9 @@ import { useFocusEffect } from 'expo-router';
 import {
   Easing,
   SharedValue,
+  cancelAnimation,
+  runOnJS,
+  runOnUI,
   useAnimatedReaction,
   useDerivedValue,
   useSharedValue,
@@ -25,6 +28,7 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
+import { blueskyPath, starPath } from '@constants/svg';
 import { debugMsg } from '@helpers/global';
 import { centerSVGPath, fitSVGPathToBounds } from '@helpers/skia';
 import { useStoreState } from '@model/useStore';
@@ -40,69 +44,25 @@ export type PathViewProps = {
   head?: SharedValue<number>;
 };
 
-const rainbowColors: string[] = [
-  '#FF0000',
-  '#FF7F00',
-  '#FFFF00',
-  '#00FF00',
-  '#0000FF',
-  '#4B0082',
-  '#9400D3'
-];
-
-// const rawString =
-// 'M 128 0 L 168 80 L 256 93 L 192 155 L 207 244 L 128 202 L 49 244 L 64 155 L 0 93 L 88 80 L 128 0 Z';
-
-const rawString =
-  'm135.72 44.03c66.496 49.921 138.02 151.14 164.28 205.46 26.262-54.316 97.782-155.54 164.28-205.46 47.98-36.021 125.72-63.892 125.72 24.795 0 17.712-10.155 148.79-16.111 170.07-20.703 73.984-96.144 92.854-163.25 81.433 117.3 19.964 147.14 86.092 82.697 152.22-122.39 125.59-175.91-31.511-189.63-71.766-2.514-7.3797-3.6904-10.832-3.7077-7.8964-.0174-2.9357-1.1937.5167-3.7077 7.8964-13.714 40.255-67.233 197.36-189.63 71.766-64.444-66.128-34.605-132.26 82.697-152.22-67.108 11.421-142.55-7.4491-163.25-81.433-5.9562-21.282-16.111-152.36-16.111-170.07 0-88.687 77.742-60.816 125.72-24.795z';
-
 export const PathView = ({ head: headProp }: PathViewProps) => {
   const head = headProp ?? useSharedValue(0);
-
-  useFocusEffect(
-    useCallback(() => {
-      log.debug('PathView gained focus');
-      // Do something when screen focuses
-
-      return () => {
-        log.debug('PathView lost focus');
-        // Clean up when screen loses focus
-      };
-    }, [])
-  );
-
-  const [mViewMatrix, mViewBBox] = useStoreState((state) => [
-    state.mViewMatrix,
-    state.mViewBBox
-  ]);
-
-  // Center the path around 0,0
-  const centeredPathString = useMemo(
-    // () => centerSVGPath(rawString),
-    () =>
-      fitSVGPathToBounds(rawString, {
-        x: -150,
-        y: -150,
-        width: 300,
-        height: 300
-      }),
-    [rawString]
-  );
-
-  // Use the centered path string
-  const path = useMemo(
-    () => Skia.Path.MakeFromSVGString(centeredPathString)!,
-    [centeredPathString]
-  );
-
+  const tail = useSharedValue(0);
+  const headMatrix = useSharedValue(Skia.Matrix());
   const wrappedHead = useDerivedValue(() => ((head.value % 1) + 1) % 1);
+  const [mViewMatrix] = useStoreState((state) => [state.mViewMatrix]);
+  const [isActive, setIsActive] = useState(true);
 
-  // useAnimatedReaction(
-  //   () => wrappedT.value,
-  //   (wrappedT) => {
-  //     debugMsg.value = `wrappedT: ${wrappedT.toFixed(3)}`;
-  //   }
-  // );
+  const path = useMemo(() => {
+    // Center the path around 0,0
+    const centered = fitSVGPathToBounds(blueskyPath, {
+      x: -150,
+      y: -150,
+      width: 300,
+      height: 300
+    });
+
+    return Skia.Path.MakeFromSVGString(centered)!;
+  }, [blueskyPath]);
 
   const { position, tangent } = usePathContourMeasure(path, wrappedHead);
 
@@ -115,18 +75,38 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
     return arrowHead;
   }, []);
 
-  useEffect(() => {
-    head.value = withRepeat(
-      withTiming(1, {
-        duration: 6000,
-        easing: Easing.linear
-      }),
-      -1,
-      false
-    );
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      log.debug('PathView gained focus');
+      runOnUI(() => {
+        // setting it slightly negative to avoid the tail locking with the head
+        head.value = 0.01;
+        tail.value = 0;
+        head.value = withRepeat(
+          withTiming(1, {
+            duration: 6000,
+            easing: Easing.linear
+          }),
+          -1,
+          false
+        );
+        runOnJS(setIsActive)(true);
+      })();
 
-  const headMatrix = useSharedValue(Skia.Matrix());
+      return () => {
+        log.debug('PathView lost focus');
+        runOnUI(() => {
+          if (head.value !== null) {
+            cancelAnimation(head);
+            // setting it slightly ahead to avoid the tail locking with the head
+            head.value = 0.01;
+            tail.value = 1;
+          }
+          runOnJS(setIsActive)(false);
+        })();
+      };
+    }, [head])
+  );
 
   useAnimatedReaction(
     () => [position.value, tangent.value],
@@ -141,6 +121,10 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
     }
   );
 
+  if (!isActive) {
+    return null;
+  }
+
   return (
     <Group matrix={mViewMatrix}>
       {/* <Path
@@ -151,15 +135,17 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
         strokeCap='round'
         strokeJoin='round'
       /> */}
+
       <TrailPath
         path={path}
         color='white'
         style='stroke'
         strokeWidth={5}
         head={head}
+        tail={tail}
         trailLength={0.4}
         isFollow={true}
-        trailDecay={0.0}
+        trailDecay={0.1}
         isWrapped={true}
         trailDivisions={15}
         tailColor='#161e27'
@@ -167,7 +153,6 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
       <Group matrix={headMatrix}>
         <Path path={arrowHead} color='white' style='fill' />
       </Group>
-      {/* <Circle cx={cx} cy={cy} r={5} color='white' /> */}
     </Group>
   );
 };

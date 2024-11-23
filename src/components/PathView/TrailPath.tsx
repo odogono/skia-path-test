@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 
 import {
   BlurMask,
@@ -75,6 +75,13 @@ export const TrailPath = ({
     tailColor: tailColor as Color
   });
 
+  useEffect(() => {
+    log.debug('TrailPath mounted');
+    return () => {
+      log.debug('TrailPath unmounted');
+    };
+  }, []);
+
   useFrameCallback((frameInfo) => {
     const headValue = head.value;
     let tailValue = tailT.value;
@@ -91,13 +98,13 @@ export const TrailPath = ({
       // if the trail is close to the target, just set it to the target
       if (Math.abs(aDiff) < 0.005) {
         tailValue = headValue;
-        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} =`;
+        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} =`;
       } else if (Math.abs(aDiff) > trailLength) {
         tailValue = headValue - Math.sign(aDiff) * (trailLength - 0.001);
-        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
+        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
       } else {
         tailValue += Math.sign(aDiff) * inc;
-        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} < ${aDiff.toFixed(3)}`;
+        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} < ${aDiff.toFixed(3)}`;
       }
 
       if (isWrapped) {
@@ -107,7 +114,7 @@ export const TrailPath = ({
       }
 
       debugMsg.value = `head: ${headValue.toFixed(3)}`;
-      debugMsg2.value = `tail: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
+      // debugMsg2.value = `tail: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
     }
 
     if (pathSections) {
@@ -130,8 +137,6 @@ export const TrailPath = ({
     }
   });
 
-  const blur = 20;
-
   return (
     <>
       {pathSections?.sections.map((section, index) => (
@@ -143,7 +148,7 @@ export const TrailPath = ({
           color={section.color}
           // strokeCap={index === 0 || index === len ? 'round' : 'butt'}
         >
-          <BlurMask blur={blur} style='solid' />
+          <BlurMask blur={20} style='solid' />
         </Path>
       ))}
     </>
