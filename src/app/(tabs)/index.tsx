@@ -6,6 +6,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 
 import { DrawView } from '@components/DrawView/DrawView';
+import { BoidSimulation } from '@components/DrawView/flock';
 import { ReText } from '@components/ReText';
 import {
   debugMsg2,
@@ -20,15 +21,16 @@ export const Draw = () => {
     <FiberProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          <DrawView />
+          {/* <DrawView /> */}
+          <BoidSimulation />
 
-          <View style={styles.sliderContainer}>
-            {/* <ReText style={styles.debugText} text={debugMsg} />
+          {/* <View style={styles.sliderContainer}>
+            <ReText style={styles.debugText} text={debugMsg} />
             <ReText style={styles.debugText} text={debugMsg2} />
             <ReText style={styles.debugText} text={debugMsg3} />
             <ReText style={styles.debugText} text={debugMsg4} />
-            <ReText style={styles.debugText} text={debugMsg5} /> */}
-          </View>
+            <ReText style={styles.debugText} text={debugMsg5} />
+          </View> */}
         </View>
       </GestureHandlerRootView>
     </FiberProvider>
