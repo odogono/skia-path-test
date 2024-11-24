@@ -14,7 +14,7 @@ import { createLogger } from '@helpers/log';
 import { ArrowHead } from './ArrowHead';
 import { PathState } from './types';
 
-const log = createLogger('DrawTrail');
+const log = createLogger('Trail');
 
 type DrawTrailProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & PathState;
 
@@ -33,13 +33,13 @@ export const Trail = ({
   useAnimatedReaction(
     () => isInUse.value,
     (isInUse) => {
-      runOnJS(log.debug)('>isInUse DrawTrail', id, isInUse);
+      // runOnJS(log.debug)('>isInUse DrawTrail', id);
 
       if (isInUse) {
         // this trail has become active - so reset the various animated values
         head.value = 0;
         tail.value = 0;
-        head.value = withTiming(1, { duration: 100, easing: Easing.linear });
+        head.value = withTiming(1, { duration: 200, easing: Easing.linear });
         runOnJS(setShowArrowHead)(true);
       }
     }
@@ -53,8 +53,6 @@ export const Trail = ({
       }
     }
   );
-
-  log.debug('DrawTrail', id, isInUse);
 
   if (!isInUse) {
     return null;
@@ -70,10 +68,10 @@ export const Trail = ({
         head={head}
         tail={tail}
         trailLength={0.9}
-        isFollow={true}
-        trailDecay={0.5}
+        isFollow
+        trailDecay={0.3}
         isWrapped={false}
-        trailDivisions={12}
+        trailDivisions={7}
         // tailColor='black'
         tailColor='#161e27'
       />

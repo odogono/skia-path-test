@@ -2,10 +2,13 @@
   "root": true,
   "parser": "@typescript-eslint/parser",
   "plugins": [
+    "@eslint-react/eslint-plugin",
     "@typescript-eslint",
     "react-native",
+    "prefer-arrow-functions",
     "prettier",
-    "eslint-plugin-react-compiler"
+    "react-compiler",
+    "react-hooks"
   ],
   "extends": [
     "universe",
@@ -29,15 +32,16 @@
     }
   ],
   "rules": {
-    "prettier/prettier": 1,
+    "@eslint-react/hooks-extra/no-direct-set-state-in-use-effect": "error",
     "@typescript-eslint/member-ordering": "warn",
+    "prettier/prettier": 1,
     "react-compiler/react-compiler": "error",
     "react-native/no-unused-styles": 1,
     "react-native/no-inline-styles": 2,
     "react-native/no-raw-text": 2,
     "react-native/no-single-element-style-arrays": 2,
     "no-console": "error",
-    "prefer-arrow/prefer-arrow-functions": [
+    "prefer-arrow-functions/prefer-arrow-functions": [
       "warn",
       {
         "disallowPrototype": true,

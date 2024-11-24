@@ -1,20 +1,23 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { Canvas, Group, useCanvasRef } from '@shopify/react-native-skia';
 import { GestureDetector } from 'react-native-gesture-handler';
+import { useFrameCallback, type FrameInfo } from 'react-native-reanimated';
 
 import { createLogger } from '@helpers/log';
 import type { Position } from '@types';
+import { DrawBoid } from './DrawBoid';
 import { Trail } from './Trail';
+import { useBoids } from './flock';
 import { useDrawGesture } from './useDrawGesture';
 
 const log = createLogger('DrawView');
 
 export const DrawView = () => {
   const canvasRef = useCanvasRef();
-  const { gesture, paths } = useDrawGesture();
   const [viewDims, setViewDims] = useState<Position | null>(null);
+  const { gesture, paths, drawBoids } = useDrawGesture(viewDims);
 
   return (
     <>
@@ -27,6 +30,9 @@ export const DrawView = () => {
             setViewDims([width, height]);
           }}
         >
+          {drawBoids.map((drawBoid) => (
+            <DrawBoid key={drawBoid.id} {...drawBoid} />
+          ))}
           {viewDims && (
             <Group>
               {paths.map((state) => (

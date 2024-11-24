@@ -53,7 +53,37 @@ The trail is a single colour, what would it take to have a sort of gradient with
 
 
 
-YOU CANT HAVE A SHARED VALUE INSIDE ANOTHER SHARED VALUE.
+## YOU CANT HAVE A SHARED VALUE INSIDE ANOTHER SHARED VALUE.
+
+type Boid = {
+  position: SharedValue<Position>;
+}
+
+const shared = useSharedValue<Boid|null>(null);
+
+useAnimatedReaction( 
+  () => cursor.value,
+  (cursorValue) => {
+    shared.value = {
+      position: cursorValue
+    }
+  }
+)
+
+you end up with a shared value like this:
+
+```
+{"_animation": null, "_isReanimatedSharedValue": true, "addListener": {}, "modify": {}, "removeListener": {}, "value": [155.0, 527.1]}
+```
+
+which if you then try and use the shared value, you get an error like this:
+
+```
+ReanimatedError: sv.addListener is not a function (it is Object), js engine: reanimated
+```
+
+annoying!
+
 
 
 ### Protip

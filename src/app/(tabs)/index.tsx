@@ -21,8 +21,8 @@ export const Draw = () => {
     <FiberProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <View style={styles.container}>
-          {/* <DrawView /> */}
-          <BoidSimulation />
+          <DrawView />
+          {/* <BoidSimulation count={50} /> */}
 
           {/* <View style={styles.sliderContainer}>
             <ReText style={styles.debugText} text={debugMsg} />

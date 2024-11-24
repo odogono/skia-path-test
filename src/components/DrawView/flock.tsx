@@ -5,28 +5,29 @@ import { Canvas, Circle, Group, Skia } from '@shopify/react-native-skia';
 import {
   FrameInfo,
   makeMutable,
+  runOnJS,
   useDerivedValue,
   useFrameCallback,
   useSharedValue
 } from 'react-native-reanimated';
 
+import { debugMsg2, debugMsg } from '@helpers/global';
 import { Mutable, Position } from '@types';
-import { debugMsg } from '../../helpers/global';
 
-type Boid = {
+export type Boid = {
   position: Mutable<Position>;
   velocity: Mutable<Position>;
   wanderAngle: Mutable<number>;
 };
 
-const NUM_BOIDS = 5;
-const MAX_SPEED = 3;
+const MAX_SPEED = 6;
 const MAX_FORCE = 0.05;
 
 const PERCEPTION_RADIUS = 50;
 const SEPARATION_RADIUS = 50;
 
-const AVOID_MARGIN = 100;
+const AVOID_MARGIN = 50;
+const AVOID_MARGIN_VERTICAL = 100;
 const AVOID_FORCE = 0.15;
 
 const ANGLE_CHANGE = 0.3;
@@ -60,7 +61,7 @@ const magnitude = (x: number, y: number) => {
 
 const avoidBounds = (boid: Boid, width: number, height: number) => {
   'worklet';
-  let steering = [0, 0];
+  const steering = [0, 0];
 
   // Left boundary
   if (boid.position.value[0] < AVOID_MARGIN) {
@@ -73,13 +74,14 @@ const avoidBounds = (boid: Boid, width: number, height: number) => {
   }
 
   // Top boundary
-  if (boid.position.value[1] < AVOID_MARGIN) {
-    steering[1] += (AVOID_MARGIN - boid.position.value[1]) * AVOID_FORCE;
+  if (boid.position.value[1] < AVOID_MARGIN_VERTICAL) {
+    steering[1] +=
+      (AVOID_MARGIN_VERTICAL - boid.position.value[1]) * AVOID_FORCE;
   }
   // Bottom boundary
-  else if (boid.position.value[1] > height - AVOID_MARGIN) {
+  else if (boid.position.value[1] > height - AVOID_MARGIN_VERTICAL) {
     steering[1] -=
-      (boid.position.value[1] - (height - AVOID_MARGIN)) * AVOID_FORCE;
+      (boid.position.value[1] - (height - AVOID_MARGIN_VERTICAL)) * AVOID_FORCE;
   }
 
   // Ensure boids don't get stuck exactly on the boundary
@@ -98,20 +100,20 @@ const wander = (boid: Boid) => {
   boid.wanderAngle.value += (Math.random() * 2 - 1) * ANGLE_CHANGE;
 
   // Calculate center of wander circle (ahead of boid)
-  let heading = Math.atan2(boid.velocity.value[1], boid.velocity.value[0]);
-  let circleCenter = [
+  const heading = Math.atan2(boid.velocity.value[1], boid.velocity.value[0]);
+  const circleCenter = [
     boid.position.value[0] + Math.cos(heading) * WANDER_OFFSET,
     boid.position.value[1] + Math.sin(heading) * WANDER_OFFSET
   ];
 
   // Calculate displacement force
-  let displacement = [
+  const displacement = [
     Math.cos(boid.wanderAngle.value) * WANDER_RADIUS,
     Math.sin(boid.wanderAngle.value) * WANDER_RADIUS
   ];
 
   // Calculate wander force
-  let wanderForce = [
+  const wanderForce = [
     (circleCenter[0] + displacement[0] - boid.position.value[0]) *
       WANDER_WEIGHT,
     (circleCenter[1] + displacement[1] - boid.position.value[1]) * WANDER_WEIGHT
@@ -123,11 +125,11 @@ const wander = (boid: Boid) => {
 const align = (boid: Boid, boids: Boid[]) => {
   'worklet';
 
-  let steering = [0, 0];
+  const steering = [0, 0];
   let total = 0;
 
-  for (let other of boids) {
-    let d = distance(
+  for (const other of boids) {
+    const d = distance(
       boid.position.value[0],
       boid.position.value[1],
       other.position.value[0],
@@ -144,7 +146,7 @@ const align = (boid: Boid, boids: Boid[]) => {
     steering[0] /= total;
     steering[1] /= total;
 
-    let mag = magnitude(steering[0], steering[1]);
+    const mag = magnitude(steering[0], steering[1]);
     if (mag > 0) {
       steering[0] = (steering[0] / mag) * MAX_SPEED;
       steering[1] = (steering[1] / mag) * MAX_SPEED;
@@ -152,7 +154,7 @@ const align = (boid: Boid, boids: Boid[]) => {
       steering[0] -= boid.velocity.value[0];
       steering[1] -= boid.velocity.value[1];
 
-      let steerMag = magnitude(steering[0], steering[1]);
+      const steerMag = magnitude(steering[0], steering[1]);
       if (steerMag > MAX_FORCE) {
         steering[0] = (steering[0] / steerMag) * MAX_FORCE;
         steering[1] = (steering[1] / steerMag) * MAX_FORCE;
@@ -165,11 +167,11 @@ const align = (boid: Boid, boids: Boid[]) => {
 const cohesion = (boid: Boid, boids: Boid[]) => {
   'worklet';
 
-  let steering = [0, 0];
+  const steering = [0, 0];
   let total = 0;
 
-  for (let other of boids) {
-    let d = distance(
+  for (const other of boids) {
+    const d = distance(
       boid.position.value[0],
       boid.position.value[1],
       other.position.value[0],
@@ -189,7 +191,7 @@ const cohesion = (boid: Boid, boids: Boid[]) => {
     steering[0] -= boid.position.value[0];
     steering[1] -= boid.position.value[1];
 
-    let mag = magnitude(steering[0], steering[1]);
+    const mag = magnitude(steering[0], steering[1]);
     if (mag > 0) {
       steering[0] = (steering[0] / mag) * MAX_SPEED;
       steering[1] = (steering[1] / mag) * MAX_SPEED;
@@ -197,7 +199,7 @@ const cohesion = (boid: Boid, boids: Boid[]) => {
       steering[0] -= boid.velocity.value[0];
       steering[1] -= boid.velocity.value[1];
 
-      let steerMag = magnitude(steering[0], steering[1]);
+      const steerMag = magnitude(steering[0], steering[1]);
       if (steerMag > MAX_FORCE) {
         steering[0] = (steering[0] / steerMag) * MAX_FORCE;
         steering[1] = (steering[1] / steerMag) * MAX_FORCE;
@@ -210,18 +212,18 @@ const cohesion = (boid: Boid, boids: Boid[]) => {
 const separation = (boid: Boid, boids: Boid[]) => {
   'worklet';
 
-  let steering = [0, 0];
+  const steering = [0, 0];
   let total = 0;
 
-  for (let other of boids) {
-    let d = distance(
+  for (const other of boids) {
+    const d = distance(
       boid.position.value[0],
       boid.position.value[1],
       other.position.value[0],
       other.position.value[1]
     );
     if (other !== boid && d < PERCEPTION_RADIUS) {
-      let diff = [
+      const diff = [
         boid.position.value[0] - other.position.value[0],
         boid.position.value[1] - other.position.value[1]
       ];
@@ -237,7 +239,7 @@ const separation = (boid: Boid, boids: Boid[]) => {
     steering[0] /= total;
     steering[1] /= total;
 
-    let mag = magnitude(steering[0], steering[1]);
+    const mag = magnitude(steering[0], steering[1]);
     if (mag > 0) {
       steering[0] = (steering[0] / mag) * MAX_SPEED;
       steering[1] = (steering[1] / mag) * MAX_SPEED;
@@ -245,7 +247,7 @@ const separation = (boid: Boid, boids: Boid[]) => {
       steering[0] -= boid.velocity.value[0];
       steering[1] -= boid.velocity.value[1];
 
-      let steerMag = magnitude(steering[0], steering[1]);
+      const steerMag = magnitude(steering[0], steering[1]);
       if (steerMag > MAX_FORCE) {
         steering[0] = (steering[0] / steerMag) * MAX_FORCE;
         steering[1] = (steering[1] / steerMag) * MAX_FORCE;
@@ -258,11 +260,11 @@ const separation = (boid: Boid, boids: Boid[]) => {
 const separation2 = (boid: Boid, boids: Boid[]) => {
   'worklet';
 
-  let steering = [0, 0];
+  const steering = [0, 0];
   let total = 0;
 
-  for (let other of boids) {
-    let d = distance(
+  for (const other of boids) {
+    const d = distance(
       boid.position.value[0],
       boid.position.value[1],
       other.position.value[0],
@@ -270,13 +272,13 @@ const separation2 = (boid: Boid, boids: Boid[]) => {
     );
 
     if (other !== boid && d < SEPARATION_RADIUS) {
-      let diff = [
+      const diff = [
         boid.position.value[0] - other.position.value[0],
         boid.position.value[1] - other.position.value[1]
       ];
 
       // Square the denominator to make separation force increase more rapidly as distance decreases
-      let factor = 1 / (d * d);
+      const factor = 1 / (d * d);
       diff[0] *= factor;
       diff[1] *= factor;
 
@@ -290,7 +292,7 @@ const separation2 = (boid: Boid, boids: Boid[]) => {
     steering[0] /= total;
     steering[1] /= total;
 
-    let mag = magnitude(steering[0], steering[1]);
+    const mag = magnitude(steering[0], steering[1]);
     if (mag > 0) {
       steering[0] = (steering[0] / mag) * MAX_SPEED;
       steering[1] = (steering[1] / mag) * MAX_SPEED;
@@ -298,7 +300,7 @@ const separation2 = (boid: Boid, boids: Boid[]) => {
       steering[0] -= boid.velocity.value[0];
       steering[1] -= boid.velocity.value[1];
 
-      let steerMag = magnitude(steering[0], steering[1]);
+      const steerMag = magnitude(steering[0], steering[1]);
       if (steerMag > MAX_FORCE) {
         steering[0] = (steering[0] / steerMag) * MAX_FORCE;
         steering[1] = (steering[1] / steerMag) * MAX_FORCE;
@@ -331,12 +333,12 @@ const update = (
 
   boids.forEach((boid) => {
     const otherBoids = boids.filter((b) => b !== boid);
-    let alignmentValue = align(boid, otherBoids);
-    let cohesionValue = cohesion(boid, otherBoids);
+    const alignmentValue = align(boid, otherBoids);
+    const cohesionValue = cohesion(boid, otherBoids);
     // let separationValue = separation(boid, otherBoids);
-    let separationValue = separation2(boid, otherBoids);
-    let avoidBoundsValue = avoidBounds(boid, width, height);
-    let wanderValue = wander(boid);
+    const separationValue = separation2(boid, otherBoids);
+    const avoidBoundsValue = avoidBounds(boid, width, height);
+    const wanderValue = wander(boid);
 
     // Add forces
     boid.velocity.modify((v) => {
@@ -360,7 +362,7 @@ const update = (
     });
 
     // Limit speed
-    let speed = magnitude(boid.velocity.value[0], boid.velocity.value[1]);
+    const speed = magnitude(boid.velocity.value[0], boid.velocity.value[1]);
     if (speed > MAX_SPEED) {
       boid.velocity.modify((v) => {
         v[0] = (v[0] / speed) * MAX_SPEED;
@@ -379,32 +381,45 @@ const update = (
   });
 };
 
-export const useBoids = (numBoids: number, width: number, height: number) => {
-  const [boids, setBoids] = useState<Boid[]>([]);
-
-  useEffect(() => {
-    const boids = Array.from({ length: numBoids }, (_, idx) =>
-      createBoid(Math.random() * width, Math.random() * height)
-    );
-    setBoids(boids);
-  }, [numBoids, width, height]);
-
-  return boids;
+export type UseBoidsProps = {
+  count: number;
+  width: number;
+  height: number;
+  maxSpeed?: number;
 };
 
-export const BoidSimulation = () => {
-  // const width = 400;
-  // const height = 600;
+export const useBoids = ({
+  count,
+  width,
+  height,
+  maxSpeed = MAX_SPEED
+}: UseBoidsProps) => {
+  const boids = useMemo(() => {
+    if (width === 0 || height === 0) return [];
+    return Array.from({ length: count }, (_, idx) =>
+      createBoid(Math.random() * width, Math.random() * height)
+    );
+  }, [count, width, height, maxSpeed]);
+
+  useFrameCallback((frameInfo: FrameInfo) => {
+    if (!width || !height) {
+      return;
+    }
+    const delta = (frameInfo.timeSincePreviousFrame ?? 0) / 1000;
+    update(boids, delta, width, height);
+  });
+
+  return { boids };
+};
+
+export const BoidSimulation = ({ count = 5 }: { count?: number }) => {
   const [viewDims, setViewDims] = useState<Position | null>(null);
 
-  const [boids, setBoids] = useState<Boid[]>([]);
-
-  useEffect(() => {
-    if (!viewDims) return;
-    const boids = Array.from({ length: NUM_BOIDS }, (_, idx) =>
+  const boids = useMemo(() => {
+    if (!viewDims) return [];
+    return Array.from({ length: count }, (_, idx) =>
       createBoid(Math.random() * viewDims[0], Math.random() * viewDims[1])
     );
-    setBoids(boids);
   }, [viewDims]);
 
   useFrameCallback((frameInfo: FrameInfo) => {

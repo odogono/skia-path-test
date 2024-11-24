@@ -66,8 +66,9 @@ export const TrailPath = ({
   tailColor,
   ...pathProps
 }: TrailPathProps) => {
-  // strange how this works - normally hooks cannot be conditionally called
-  const tailT = tail ?? useSharedValue(0);
+  const defaultT = useSharedValue(0);
+
+  const tailT = tail ?? defaultT;
 
   const pathSections = usePathSections({
     count: trailDivisions + 2,
@@ -75,12 +76,12 @@ export const TrailPath = ({
     tailColor: tailColor as Color
   });
 
-  useEffect(() => {
-    log.debug('TrailPath mounted');
-    return () => {
-      log.debug('TrailPath unmounted');
-    };
-  }, []);
+  // useEffect(() => {
+  //   log.debug('TrailPath mounted');
+  //   return () => {
+  //     log.debug('TrailPath unmounted');
+  //   };
+  // }, []);
 
   useFrameCallback((frameInfo) => {
     const headValue = head.value;
@@ -98,22 +99,23 @@ export const TrailPath = ({
       // if the trail is close to the target, just set it to the target
       if (Math.abs(aDiff) < 0.005) {
         tailValue = headValue;
-        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} =`;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} =`;
       } else if (Math.abs(aDiff) > trailLength) {
         tailValue = headValue - Math.sign(aDiff) * (trailLength - 0.001);
-        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} >`;
       } else {
         tailValue += Math.sign(aDiff) * inc;
-        debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} < ${aDiff.toFixed(3)}`;
+        // debugMsg2.value = `tailValue: ${tailValue.toFixed(3)} < ${aDiff.toFixed(3)}`;
       }
 
       if (isWrapped) {
+        // eslint-disable-next-line react-compiler/react-compiler
         tailT.value = ((tailValue % 1) + 1) % 1;
       } else {
         tailT.value = tailValue;
       }
 
-      debugMsg.value = `head: ${headValue.toFixed(3)}`;
+      // debugMsg.value = `head: ${headValue.toFixed(3)}`;
       // debugMsg2.value = `tail: ${tailValue.toFixed(3)} diff ${aDiff.toFixed(3)} `;
     }
 
@@ -128,12 +130,12 @@ export const TrailPath = ({
       );
       // debugMsg2.value = `t: ${tailValue.toFixed(3)} h: ${headValue.toFixed(3)} ${aDiff.toFixed(3)}`;
 
-      const { start: start1, end: end1 } = pathSections.sections[0];
-      const { start: start2, end: end2 } = pathSections.sections[1];
-      const { start: start3, end: end3 } = pathSections.sections[2];
-      debugMsg3.value = `start1: ${start1.value.toFixed(3)} end1: ${end1.value.toFixed(3)}`;
-      debugMsg4.value = `start2: ${start2.value.toFixed(3)} end2: ${end2.value.toFixed(3)}`;
-      debugMsg5.value = `start3: ${start3.value.toFixed(3)} end3: ${end3.value.toFixed(3)}`;
+      // const { start: start1, end: end1 } = pathSections.sections[0];
+      // const { start: start2, end: end2 } = pathSections.sections[1];
+      // const { start: start3, end: end3 } = pathSections.sections[2];
+      // debugMsg3.value = `start1: ${start1.value.toFixed(3)} end1: ${end1.value.toFixed(3)}`;
+      // debugMsg4.value = `start2: ${start2.value.toFixed(3)} end2: ${end2.value.toFixed(3)}`;
+      // debugMsg5.value = `start3: ${start3.value.toFixed(3)} end3: ${end3.value.toFixed(3)}`;
     }
   });
 
