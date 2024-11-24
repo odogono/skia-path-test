@@ -39,9 +39,8 @@ export const DrawView = () => {
                 <Trail
                   key={`dt-${state.id}`}
                   {...state}
-                  strokeWidth={5}
+                  strokeWidth={4}
                   style='stroke'
-                  color='lightblue'
                 />
               ))}
             </Group>

@@ -25,12 +25,12 @@ export const Colors = {
   }
 };
 
-const rainbowColors: string[] = [
-  '#FF0000',
+export const rainbowColors: string[] = [
+  '#ff6262',
   '#FF7F00',
   '#FFFF00',
   '#00FF00',
-  '#0000FF',
-  '#4B0082',
+  '#66ffff',
+  '#8f00f8',
   '#9400D3'
 ];

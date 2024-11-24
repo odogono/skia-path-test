@@ -31,7 +31,7 @@ export const DrawBoid = ({
       if (pathIndex.value === -2) {
         pathIndex.value = -1;
 
-        const timeout = Math.floor(Math.random() * (100 - 10) + 10);
+        const timeout = Math.floor(Math.random() * (5000 - 1000) + 1000);
 
         setAnimatedTimeout(() => {
           pathIndex.value = startPath(
@@ -47,7 +47,7 @@ export const DrawBoid = ({
           }, timeout);
         }, timeout);
       } else if (pathIndex.value === -1) {
-        // do nothing
+        // do nothing - wait for the startPath to begin
       } else {
         updatePath(
           pathIndex.value,

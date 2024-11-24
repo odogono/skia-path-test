@@ -23,7 +23,8 @@ export const Trail = ({
   headPos,
   headTan,
   id,
-  isInUse
+  isInUse,
+  color
 }: DrawTrailProps) => {
   const head = useSharedValue(0);
   const tail = useSharedValue(0);
@@ -62,7 +63,7 @@ export const Trail = ({
     <>
       <TrailPath
         path={path}
-        color='white'
+        color={color}
         style='stroke'
         strokeWidth={5}
         head={head}
@@ -71,11 +72,13 @@ export const Trail = ({
         isFollow
         trailDecay={0.3}
         isWrapped={false}
-        trailDivisions={7}
+        trailDivisions={9}
         // tailColor='black'
         tailColor='#161e27'
       />
-      {showArrowHead && <ArrowHead position={headPos} tangent={headTan} />}
+      {showArrowHead && (
+        <ArrowHead color={color} position={headPos} tangent={headTan} />
+      )}
     </>
   );
 };

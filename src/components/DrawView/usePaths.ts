@@ -10,8 +10,8 @@ import {
   useSharedValue
 } from 'react-native-reanimated';
 
+import { rainbowColors } from '@constants/Colors';
 import { createLogger } from '@helpers/log';
-import { PathState } from './types';
 
 const log = createLogger('usePaths');
 
@@ -22,7 +22,8 @@ const createPathState = (idx: number) => {
     length: 0,
     path: makeMutable(Skia.Path.Make()),
     headPos: makeMutable(Skia.Point(0, 0)),
-    headTan: makeMutable(Skia.Point(0, 0))
+    headTan: makeMutable(Skia.Point(0, 0)),
+    color: rainbowColors[idx % rainbowColors.length]
   };
 };
 

@@ -7,10 +7,12 @@ import { Mutable } from '@types';
 
 export const ArrowHead = ({
   position,
-  tangent
+  tangent,
+  color = 'lightblue'
 }: {
   position: Mutable<SkPoint>;
   tangent: Mutable<SkPoint>;
+  color: string;
 }) => {
   const headMatrix = useSharedValue(Skia.Matrix());
 
@@ -38,7 +40,7 @@ export const ArrowHead = ({
 
   return (
     <Group matrix={headMatrix}>
-      <Path path={path} color='white' style='fill' />
+      <Path path={path} color={color} style='fill' />
     </Group>
   );
 };

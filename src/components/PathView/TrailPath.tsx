@@ -76,13 +76,6 @@ export const TrailPath = ({
     tailColor: tailColor as Color
   });
 
-  // useEffect(() => {
-  //   log.debug('TrailPath mounted');
-  //   return () => {
-  //     log.debug('TrailPath unmounted');
-  //   };
-  // }, []);
-
   useFrameCallback((frameInfo) => {
     const headValue = head.value;
     let tailValue = tailT.value;
@@ -148,7 +141,6 @@ export const TrailPath = ({
           start={section.start}
           end={section.end}
           color={section.color}
-          // strokeCap={index === 0 || index === len ? 'round' : 'butt'}
         >
           <BlurMask blur={20} style='solid' />
         </Path>

@@ -20,7 +20,7 @@ export type Boid = {
   wanderAngle: Mutable<number>;
 };
 
-const MAX_SPEED = 6;
+const MAX_SPEED = 8;
 const MAX_FORCE = 0.05;
 
 const PERCEPTION_RADIUS = 50;
@@ -36,8 +36,8 @@ const WANDER_RADIUS = 1;
 
 const WANDER_WEIGHT = 0.1;
 const ALIGNMENT_WEIGHT = 1.5;
-const COHESION_WEIGHT = 0.1;
-const SEPARATION_WEIGHT = 1.0;
+const COHESION_WEIGHT = 0.5;
+const SEPARATION_WEIGHT = 0.5;
 
 const createBoid = (x: number, y: number): Boid => {
   return {

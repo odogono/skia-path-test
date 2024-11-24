@@ -10,15 +10,15 @@ import type { Position } from '@types';
 // for 3D version, see 3d branch (configurability would draw significant performance overhead)
 
 // square distance between 2 points
-function getSqDist(p1: Position, p2: Position) {
+const getSqDist = (p1: Position, p2: Position) => {
   const dx = p1[0] - p2[0],
     dy = p1[1] - p2[1];
 
   return dx * dx + dy * dy;
-}
+};
 
 // square distance from a point to a segment
-function getSqSegDist(p: Position, p1: Position, p2: Position) {
+const getSqSegDist = (p: Position, p1: Position, p2: Position) => {
   let x = p1[0],
     y = p1[1],
     dx = p2[0] - x,
@@ -40,11 +40,11 @@ function getSqSegDist(p: Position, p1: Position, p2: Position) {
   dy = p[1] - y;
 
   return dx * dx + dy * dy;
-}
+};
 // rest of the code doesn't care about point format
 
 // basic distance-based simplification
-function simplifyRadialDist(points: Position[], sqTolerance: number) {
+const simplifyRadialDist = (points: Position[], sqTolerance: number) => {
   let prevPoint = points[0];
   const newPoints = [prevPoint];
   let point: Position = points[1];
@@ -61,15 +61,15 @@ function simplifyRadialDist(points: Position[], sqTolerance: number) {
   if (prevPoint !== point) newPoints.push(point);
 
   return newPoints;
-}
+};
 
-function simplifyDPStep(
+const simplifyDPStep = (
   points: Position[],
   first: number,
   last: number,
   sqTolerance: number,
   simplified: Position[]
-) {
+) => {
   let maxSqDist = sqTolerance,
     index: number = -1;
 
@@ -90,10 +90,10 @@ function simplifyDPStep(
     if (last - index > 1)
       simplifyDPStep(points, index, last, sqTolerance, simplified);
   }
-}
+};
 
 // simplification using Ramer-Douglas-Peucker algorithm
-function simplifyDouglasPeucker(points: Position[], sqTolerance: number) {
+const simplifyDouglasPeucker = (points: Position[], sqTolerance: number) => {
   const last = points.length - 1;
 
   const simplified = [points[0]];
@@ -103,14 +103,14 @@ function simplifyDouglasPeucker(points: Position[], sqTolerance: number) {
   simplified.push(points[last]);
 
   return simplified;
-}
+};
 
 // both algorithms combined for awesome performance
-export function simplify(
+export const simplify = (
   points: Position[],
   tolerance: number,
   highestQuality: boolean
-) {
+) => {
   if (points.length <= 2) return points;
 
   const sqTolerance = tolerance !== undefined ? tolerance * tolerance : 1;
@@ -119,4 +119,4 @@ export function simplify(
   points = simplifyDouglasPeucker(points, sqTolerance);
 
   return points;
-}
+};
