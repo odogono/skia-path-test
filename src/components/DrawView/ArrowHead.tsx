@@ -1,6 +1,13 @@
 import { useMemo } from 'react';
 
-import { Group, Path, SkPoint, Skia } from '@shopify/react-native-skia';
+import {
+  Color,
+  Group,
+  Path,
+  SharedValueType,
+  SkPoint,
+  Skia
+} from '@shopify/react-native-skia';
 import { useAnimatedReaction, useSharedValue } from 'react-native-reanimated';
 
 import { Mutable } from '@types';
@@ -12,7 +19,7 @@ export const ArrowHead = ({
 }: {
   position: Mutable<SkPoint>;
   tangent: Mutable<SkPoint>;
-  color: string;
+  color: Color | SharedValueType<Color | undefined>;
 }) => {
   const headMatrix = useSharedValue(Skia.Matrix());
 

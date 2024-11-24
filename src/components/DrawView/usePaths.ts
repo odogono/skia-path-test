@@ -44,7 +44,7 @@ export const usePaths = (count: number = 5) => {
 
   const startPath = useCallback((point: SkPoint) => {
     'worklet';
-    // pathInUseIndex.value = (pathInUseIndex.value + 1) % PATH_MAX;
+
     const idx = pathInUseIndex.value++ % count;
 
     const state = pathsValue.value[idx];
@@ -58,7 +58,6 @@ export const usePaths = (count: number = 5) => {
     state.headTan.value = Skia.Point(0, 0);
     state.isInUse.value = true;
 
-    // runOnJS(log.debug)(`startPath: ${idx}`);
     return idx;
   }, []);
 

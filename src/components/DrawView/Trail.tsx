@@ -24,7 +24,7 @@ export const Trail = ({
   headTan,
   id,
   isInUse,
-  color
+  color = 'lightblue'
 }: DrawTrailProps) => {
   const head = useSharedValue(0);
   const tail = useSharedValue(0);

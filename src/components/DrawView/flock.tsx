@@ -1,17 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { Canvas, Circle, Group, Skia } from '@shopify/react-native-skia';
+import { Canvas, Circle, Group } from '@shopify/react-native-skia';
 import {
   FrameInfo,
   makeMutable,
-  runOnJS,
   useDerivedValue,
-  useFrameCallback,
-  useSharedValue
+  useFrameCallback
 } from 'react-native-reanimated';
 
-import { debugMsg2, debugMsg } from '@helpers/global';
 import { Mutable, Position } from '@types';
 
 export type Boid = {
@@ -20,7 +17,7 @@ export type Boid = {
   wanderAngle: Mutable<number>;
 };
 
-const MAX_SPEED = 8;
+const MAX_SPEED = 10;
 const MAX_FORCE = 0.05;
 
 const PERCEPTION_RADIUS = 50;
@@ -36,7 +33,7 @@ const WANDER_RADIUS = 1;
 
 const WANDER_WEIGHT = 0.1;
 const ALIGNMENT_WEIGHT = 1.5;
-const COHESION_WEIGHT = 0.5;
+const COHESION_WEIGHT = 0.9;
 const SEPARATION_WEIGHT = 0.5;
 
 const createBoid = (x: number, y: number): Boid => {
