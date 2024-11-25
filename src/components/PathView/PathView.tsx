@@ -1,19 +1,6 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
-import {
-  BlurMask,
-  Circle,
-  CornerPathEffect,
-  Group,
-  Path,
-  PathProps,
-  Rect,
-  SkContourMeasure,
-  SkPath,
-  SkPoint,
-  Skia,
-  SkiaDefaultProps
-} from '@shopify/react-native-skia';
+import { Group, Path, Skia } from '@shopify/react-native-skia';
 import { useFocusEffect } from 'expo-router';
 import {
   Easing,
@@ -29,12 +16,10 @@ import {
 } from 'react-native-reanimated';
 
 import { blueskyPath, starPath } from '@constants/svg';
-import { debugMsg } from '@helpers/global';
-import { centerSVGPath, fitSVGPathToBounds } from '@helpers/skia';
+import { fitSVGPathToBounds } from '@helpers/skia';
 import { useStoreState } from '@model/useStore';
 import { TrailPath } from './TrailPath';
 import { usePathContourMeasure } from './usePathContourMeasure';
-import { useTrailPath } from './useTrailPath';
 
 const { createLogger } = require('@helpers/log');
 
@@ -45,7 +30,8 @@ export type PathViewProps = {
 };
 
 export const PathView = ({ head: headProp }: PathViewProps) => {
-  const head = headProp ?? useSharedValue(0);
+  const headDefault = useSharedValue(0);
+  const head = headProp ?? headDefault;
   const tail = useSharedValue(0);
   const headMatrix = useSharedValue(Skia.Matrix());
   const wrappedHead = useDerivedValue(() => ((head.value % 1) + 1) % 1);
@@ -77,9 +63,9 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
 
   useFocusEffect(
     useCallback(() => {
-      log.debug('PathView gained focus');
       runOnUI(() => {
         // setting it slightly negative to avoid the tail locking with the head
+        // eslint-disable-next-line react-compiler/react-compiler
         head.value = 0.01;
         tail.value = 0;
         head.value = withRepeat(
@@ -94,7 +80,6 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
       })();
 
       return () => {
-        log.debug('PathView lost focus');
         runOnUI(() => {
           if (head.value !== null) {
             cancelAnimation(head);
@@ -144,9 +129,9 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
         head={head}
         tail={tail}
         trailLength={0.4}
-        isFollow={true}
+        isFollow
         trailDecay={0.1}
-        isWrapped={true}
+        isWrapped
         trailDivisions={15}
         tailColor='#161e27'
       />

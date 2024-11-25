@@ -1,20 +1,11 @@
-import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { FiberProvider } from 'its-fine';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 
 import { PathView } from '@components/PathView/PathView';
-import { ReText } from '@components/ReText';
 import { WorldCanvas } from '@components/WorldCanvas/WorldCanvas';
-import {
-  debugMsg2,
-  debugMsg3,
-  debugMsg4,
-  debugMsg5,
-  debugMsg
-} from '@helpers/global';
 import { Slider } from '@miblanchard/react-native-slider';
 import { StoreProvider } from '@model/StoreProvider/StoreProvider';
 
@@ -27,7 +18,7 @@ export const Path = () => {
 
   return (
     <FiberProvider>
-      <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureHandlerRootView style={styles.gestureContainer}>
         <View style={styles.container}>
           <StoreProvider>
             <WorldCanvas>
@@ -35,11 +26,7 @@ export const Path = () => {
             </WorldCanvas>
 
             <View style={styles.sliderContainer}>
-              {/* <ReText style={styles.debugText} text={debugMsg} />
-              <ReText style={styles.debugText} text={debugMsg2} />
-              <ReText style={styles.debugText} text={debugMsg3} />
-              <ReText style={styles.debugText} text={debugMsg4} /> */}
-              {/* <ReText style={styles.debugText} text={debugMsg5} /> */}
+              {/* Debug /> */}
               {/* <Slider
                 minimumValue={minValue}
                 maximumValue={maxValue}
@@ -66,13 +53,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#161e27'
   },
+  gestureContainer: {
+    flex: 1
+  },
   sliderContainer: {
     position: 'absolute',
     bottom: 46,
     width: '80%'
-  },
-  debugText: {
-    color: '#fff'
   },
   trackMark: {
     width: 4,

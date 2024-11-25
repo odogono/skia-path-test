@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import {
   BlurMask,
   Color,
@@ -14,14 +12,6 @@ import {
 } from 'react-native-reanimated';
 
 import { getAngularDiff } from '@helpers/getAngularDiff';
-import {
-  debugMsg2,
-  debugMsg3,
-  debugMsg4,
-  debugMsg5,
-  debugMsg
-} from '@helpers/global';
-import { Mutable } from '@types';
 import { updatePathSections } from './updatePathSections';
 import { usePathSections } from './usePathSections';
 

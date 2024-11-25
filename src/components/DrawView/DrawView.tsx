@@ -1,13 +1,13 @@
-import React, { useMemo, useState } from 'react';
-import { LayoutRectangle, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 
 import { Canvas, Group, useCanvasRef } from '@shopify/react-native-skia';
 import { GestureDetector } from 'react-native-gesture-handler';
 
-import type { Position } from '@types';
+import { useViewDims } from '@helpers/useViewDims';
+import { useBoids } from './Boids/useBoids';
 import { DrawBoid } from './DrawBoid';
 import { Trail } from './Trail';
-import { useBoids } from './flock';
 import { useDrawGesture } from './useDrawGesture';
 import { usePaths } from './usePaths';
 
@@ -18,12 +18,7 @@ type DrawViewProps = {
 export const DrawView = ({ boidCount = 10 }: DrawViewProps) => {
   const canvasRef = useCanvasRef();
 
-  const [viewDims, setViewDims] = useState<LayoutRectangle>({
-    width: 0,
-    height: 0,
-    x: 0,
-    y: 0
-  });
+  const { viewDims, setViewDims } = useViewDims();
 
   const { paths, startPath, updatePath, endPath } = usePaths(boidCount * 2);
 
@@ -32,7 +27,7 @@ export const DrawView = ({ boidCount = 10 }: DrawViewProps) => {
     count: boidCount,
     width: viewDims.width,
     height: viewDims.height,
-    maxSpeed: 10
+    maxSpeed: 13
   });
 
   //

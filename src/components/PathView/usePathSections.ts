@@ -28,16 +28,12 @@ export type UsePathSectionsProps = {
 export const usePathSections = (
   props: UsePathSectionsProps
 ): PathSections | null => {
-  const [sections, setSections] = useState<PathSections | null>(null);
+  const [sections] = useState<PathSections>(() => createPathSections(props));
   const { count } = props;
 
   useEffect(() => {
-    const items = createPathSections(props);
-
-    setSections(items);
-
     return () => {
-      clearPathSections(items);
+      clearPathSections(sections);
     };
   }, [count]);
 
