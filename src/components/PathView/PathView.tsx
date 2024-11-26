@@ -15,11 +15,12 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
-import { blueskyPath, starPath } from '@constants/svg';
+import { blueskyPath, circlePath, linePath, starPath } from '@constants/svg';
 import { fitSVGPathToBounds } from '@helpers/skia';
 import { useStoreState } from '@model/useStore';
 import { TrailPath } from './TrailPath';
 import { usePathContourMeasure } from './usePathContourMeasure';
+import { usePathPosition } from './usePathPosition';
 
 const { createLogger } = require('@helpers/log');
 
@@ -29,18 +30,19 @@ export type PathViewProps = {
   head?: SharedValue<number>;
 };
 
+const svgPath = blueskyPath;
+
 export const PathView = ({ head: headProp }: PathViewProps) => {
   const headDefault = useSharedValue(0);
   const head = headProp ?? headDefault;
   const tail = useSharedValue(0);
-  const headMatrix = useSharedValue(Skia.Matrix());
   const wrappedHead = useDerivedValue(() => ((head.value % 1) + 1) % 1);
   const [mViewMatrix] = useStoreState((state) => [state.mViewMatrix]);
   const [isActive, setIsActive] = useState(true);
 
   const path = useMemo(() => {
     // Center the path around 0,0
-    const centered = fitSVGPathToBounds(blueskyPath, {
+    const centered = fitSVGPathToBounds(svgPath, {
       x: -150,
       y: -150,
       width: 300,
@@ -48,9 +50,9 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
     });
 
     return Skia.Path.MakeFromSVGString(centered)!;
-  }, [blueskyPath]);
+  }, [svgPath]);
 
-  const { position, tangent } = usePathContourMeasure(path, wrappedHead);
+  const headMatrix = usePathPosition(path, wrappedHead);
 
   const arrowHead = useMemo(() => {
     const arrowHead = Skia.Path.Make();
@@ -93,19 +95,6 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
     }, [head])
   );
 
-  useAnimatedReaction(
-    () => [position.value, tangent.value],
-    ([position, tangent]) => {
-      headMatrix.modify((m) => {
-        m.identity();
-        m.translate(position[0], position[1]);
-        m.scale(1.5, 1.5);
-        m.rotate(Math.atan2(tangent[1], tangent[0]) - Math.PI / 2);
-        return m;
-      });
-    }
-  );
-
   if (!isActive) {
     return null;
   }
@@ -123,20 +112,21 @@ export const PathView = ({ head: headProp }: PathViewProps) => {
 
       <TrailPath
         path={path}
-        color='white'
+        color='lightblue'
         style='stroke'
         strokeWidth={5}
         head={head}
         tail={tail}
         trailLength={0.4}
         isFollow
-        trailDecay={0.1}
+        trailDecay={0}
         isWrapped
-        trailDivisions={15}
-        tailColor='#161e27'
+        trailDivisions={30}
+        tailColor='transparent'
+        hasGlow={false}
       />
       <Group matrix={headMatrix}>
-        <Path path={arrowHead} color='white' style='fill' />
+        <Path path={arrowHead} color='lightblue' style='fill' />
       </Group>
     </Group>
   );

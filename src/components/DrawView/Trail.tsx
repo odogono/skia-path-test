@@ -1,6 +1,5 @@
 import { useState } from 'react';
 
-import { PathProps, SkiaDefaultProps } from '@shopify/react-native-skia';
 import {
   Easing,
   runOnJS,
@@ -9,26 +8,26 @@ import {
   withTiming
 } from 'react-native-reanimated';
 
-import { TrailPath } from '@components/PathView/TrailPath';
+import { TrailPath, TrailPathProps } from '@components/PathView/TrailPath';
 import { createLogger } from '@helpers/log';
 import { ArrowHead } from './ArrowHead';
 import { PathState } from './types';
 
 const log = createLogger('Trail');
 
-type DrawTrailProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & PathState;
+type DrawTrailProps = TrailPathProps & PathState;
 
 export const Trail = ({
   path,
   headPos,
   headTan,
-  id,
   isInUse,
-  color = 'lightblue'
+  ...trailPathProps
 }: DrawTrailProps) => {
   const head = useSharedValue(0);
   const tail = useSharedValue(0);
   const [showArrowHead, setShowArrowHead] = useState(true);
+  const arrowColor = trailPathProps.color;
 
   // called when the path changes its isInUse value
   useAnimatedReaction(
@@ -63,21 +62,18 @@ export const Trail = ({
     <>
       <TrailPath
         path={path}
-        color={color}
         style='stroke'
         strokeWidth={5}
-        head={head}
         tail={tail}
-        trailLength={0.9}
         isFollow
         trailDecay={0.3}
         isWrapped={false}
-        trailDivisions={9}
-        // tailColor='black'
-        tailColor='#161e27'
+        tailColor='black'
+        {...trailPathProps}
+        head={head}
       />
       {showArrowHead && (
-        <ArrowHead color={color} position={headPos} tangent={headTan} />
+        <ArrowHead color={arrowColor} position={headPos} tangent={headTan} />
       )}
     </>
   );

@@ -27,7 +27,7 @@ export const DrawView = ({ boidCount = 10 }: DrawViewProps) => {
     count: boidCount,
     width: viewDims.width,
     height: viewDims.height,
-    maxSpeed: 13
+    maxSpeed: 6
   });
 
   //
@@ -66,6 +66,9 @@ export const DrawView = ({ boidCount = 10 }: DrawViewProps) => {
                   key={`dt-${state.id}`}
                   {...state}
                   strokeWidth={4}
+                  trailLength={0.9}
+                  trailDivisions={7}
+                  tailColor='#161e27'
                   style='stroke'
                 />
               ))}

@@ -25,6 +25,7 @@ export type UsePathSectionsProps = {
   tailColor?: Color | undefined;
 };
 
+// todo - unused. delete eventually
 export const usePathSections = (
   props: UsePathSectionsProps
 ): PathSections | null => {

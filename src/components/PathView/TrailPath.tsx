@@ -3,6 +3,7 @@ import {
   Color,
   Path,
   PathProps,
+  SharedValueType,
   SkiaDefaultProps
 } from '@shopify/react-native-skia';
 import {
@@ -42,7 +43,9 @@ export type TrailPathProps = SkiaDefaultProps<PathProps, 'start' | 'end'> & {
   isWrapped?: boolean;
 
   // color of the tail - only useful if trailDivisions > 1
-  tailColor?: Color;
+  tailColor?: Color | SharedValueType<Color | undefined>;
+
+  hasGlow?: boolean;
 };
 
 export const TrailPath = ({
@@ -54,6 +57,7 @@ export const TrailPath = ({
   isFollow = false,
   isWrapped = false,
   tailColor,
+  hasGlow = true,
   ...pathProps
 }: TrailPathProps) => {
   const defaultT = useSharedValue(0);
@@ -103,7 +107,6 @@ export const TrailPath = ({
     }
 
     if (pathSections) {
-      //&& headValue !== tailValue) {
       updatePathSections(
         pathSections,
         tailValue,
@@ -132,7 +135,7 @@ export const TrailPath = ({
           end={section.end}
           color={section.color}
         >
-          <BlurMask blur={20} style='solid' />
+          {hasGlow && <BlurMask blur={20} style='solid' />}
         </Path>
       ))}
     </>

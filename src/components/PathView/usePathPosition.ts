@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 
 import { SkPath, Skia } from '@shopify/react-native-skia';
 import {
@@ -7,12 +7,10 @@ import {
   useSharedValue
 } from 'react-native-reanimated';
 
-import { Position } from '@types';
 import { ContourMeasure } from './types';
 
-export const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
-  const position = useSharedValue<Position>([0, 0]);
-  const tangent = useSharedValue<Position>([0, 0]);
+export const usePathPosition = (path: SkPath, t: SharedValue<number>) => {
+  const matrix = useSharedValue(Skia.Matrix());
 
   const contourMeasure = useSharedValue<ContourMeasure>([null, 0]);
 
@@ -33,10 +31,17 @@ export const usePathContourMeasure = (path: SkPath, t: SharedValue<number>) => {
         { x: 0, y: 0 }
       ];
 
-      position.value = [pos.x, pos.y];
-      tangent.value = [tan.x, tan.y];
+      matrix.modify((m) => {
+        m.identity();
+        m.translate(pos.x, pos.y);
+
+        // todo - make these props. very much tied to the current use case
+        m.scale(1.5, 1.5);
+        m.rotate(Math.atan2(tan.y, tan.x) - Math.PI / 2);
+        return m;
+      });
     }
   );
 
-  return { position, tangent, contourMeasure };
+  return matrix;
 };

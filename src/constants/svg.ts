@@ -1,3 +1,9 @@
+export const linePath = 'M 0 0 L 200 0';
+
+export const arcPath = 'M 100 0 A 100 100 0 0 0 0 0';
+
+export const circlePath = 'M25,0 C60,0, 60,50, 25,50 C-10,50, -10,0, 25,0';
+
 export const starPath =
   'M 128 0 L 168 80 L 256 93 L 192 155 L 207 244 L 128 202 L 49 244 L 64 155 L 0 93 L 88 80 L 128 0 Z';
 
