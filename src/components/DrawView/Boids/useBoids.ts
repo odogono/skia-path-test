@@ -33,5 +33,5 @@ export const useBoids = ({
     update(boids, delta, maxSpeed, width, height);
   });
 
-  return { boids };
+  return boids;
 };

@@ -9,7 +9,7 @@ import { useBoids } from './useBoids';
 export const BoidCanvas = ({ count = 5 }: { count?: number }) => {
   const { viewDims, setViewDims, areViewDimsValid } = useViewDims();
 
-  const { boids } = useBoids({
+  const boids = useBoids({
     count,
     width: viewDims.width,
     height: viewDims.height

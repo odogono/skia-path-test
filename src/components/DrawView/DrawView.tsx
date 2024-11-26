@@ -23,7 +23,7 @@ export const DrawView = ({ boidCount = 10 }: DrawViewProps) => {
   const { paths, startPath, updatePath, endPath } = usePaths(boidCount * 2);
 
   // create a boid flock simulation
-  const { boids } = useBoids({
+  const boids = useBoids({
     count: boidCount,
     width: viewDims.width,
     height: viewDims.height,
